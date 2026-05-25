@@ -1,0 +1,243 @@
+---
+import AdminLayout from "../../../layouts/AdminLayout.astro";
+import { supabase } from "../../../lib/supabase";
+
+// 1. getStaticPaths untuk menghasilkan rute edit bagi setiap slug tulisan di server
+export async function getStaticPaths() {
+  const { data: posts } = await supabase
+    .from("posts")
+    .select("slug");
+
+  return posts?.map((post) => ({
+    params: { slug: post.slug },
+  })) || [];
+}
+
+const { slug } = Astro.params;
+
+// 2. Tarik data tulisan yang ada saat ini dari Supabase
+const { data: post } = await supabase
+  .from("posts")
+  .select("*")
+  .eq("slug", slug)
+  .single();
+
+if (!post) {
+  return Astro.redirect("/admin");
+}
+
+// Konversi tags array ke string berpemisah koma untuk mempermudah form
+const tagsString = post.tags ? post.tags.join(", ") : "";
+---
+
+<AdminLayout title={`Edit: ${post.title} — HanNajib`}>
+  <!-- Load Quill CSS and JS from CDN -->
+  <link href="https://cdn.jsdelivr.net/npm/quill@2.0.2/dist/quill.snow.css" rel="stylesheet" is:inline>
+  <script src="https://cdn.jsdelivr.net/npm/quill@2.0.2/dist/quill.js" is:inline></script>
+
+  <div id="editor-content" class="opacity-0 transition-opacity duration-300 space-y-8 py-4">
+    <!-- Header -->
+    <div class="border-b border-zinc-200 dark:border-zinc-800 pb-6 flex items-center justify-between">
+      <div>
+        <h2 class="text-xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50">
+          Ubah Publikasi
+        </h2>
+        <p class="text-xs text-zinc-400 dark:text-zinc-500 font-mono mt-1">
+          / lakukan penyesuaian konten Anda dengan Rich Text Editor
+        </p>
+      </div>
+      <a href="/admin" class="text-xs text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200 transition-colors font-mono">
+        &larr; Batal & Kembali
+      </a>
+    </div>
+
+    <!-- Form & Editor Grid -->
+    <form id="edit-form" class="space-y-6" data-id={post.id}>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        
+        <!-- Kolom Form Kiri (1/3 Lebar) -->
+        <div class="md:col-span-1 space-y-4">
+          <div>
+            <label class="block text-[10px] font-mono uppercase tracking-wider text-zinc-400 dark:text-zinc-505 mb-1">Judul Artikel</label>
+            <input type="text" id="post-title" required value={post.title} placeholder="Contoh: Belajar Esensi Tipografi UI" class="w-full px-3 py-2 text-xs rounded-lg border border-zinc-200 dark:border-zinc-800 bg-transparent focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-all text-zinc-800 dark:text-zinc-200">
+          </div>
+
+          <div>
+            <label class="block text-[10px] font-mono uppercase tracking-wider text-zinc-400 dark:text-zinc-505 mb-1">Slug URL (Otomatis)</label>
+            <input type="text" id="post-slug" required value={post.slug} placeholder="belajar-esensi-tipografi-ui" class="w-full px-3 py-2 text-xs rounded-lg border border-zinc-200 dark:border-zinc-800 bg-zinc-100 dark:bg-zinc-900/50 focus:outline-none text-zinc-500 dark:text-zinc-400 font-mono">
+          </div>
+
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="block text-[10px] font-mono uppercase tracking-wider text-zinc-400 dark:text-zinc-505 mb-1">Kategori</label>
+              <select id="post-category" class="w-full px-3 py-2 text-xs rounded-lg border border-zinc-200 dark:border-zinc-800 bg-transparent focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-all text-zinc-800 dark:text-zinc-200 cursor-pointer">
+                <option value="note" selected={post.category === "note"}>Note</option>
+                <option value="work" selected={post.category === "work"}>Work</option>
+                <option value="til" selected={post.category === "til"}>TIL</option>
+                <option value="snap" selected={post.category === "snap"}>Snap</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-[10px] font-mono uppercase tracking-wider text-zinc-400 dark:text-zinc-505 mb-1">Waktu Baca</label>
+              <input type="text" id="post-readtime" required value={post.read_time} placeholder="4 min read" class="w-full px-3 py-2 text-xs rounded-lg border border-zinc-200 dark:border-zinc-800 bg-transparent focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-all text-zinc-800 dark:text-zinc-200">
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-[10px] font-mono uppercase tracking-wider text-zinc-400 dark:text-zinc-505 mb-1">Tags (Pemisah Koma)</label>
+            <input type="text" id="post-tags" required value={tagsString} placeholder="design, minimalis, web" class="w-full px-3 py-2 text-xs rounded-lg border border-zinc-200 dark:border-zinc-800 bg-transparent focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-all text-zinc-800 dark:text-zinc-200">
+          </div>
+
+          <div>
+            <label class="block text-[10px] font-mono uppercase tracking-wider text-zinc-400 dark:text-zinc-505 mb-1">Image Cover URL (Opsional)</label>
+            <input type="url" id="post-image" value={post.image} placeholder="https://images.unsplash.com/..." class="w-full px-3 py-2 text-xs rounded-lg border border-zinc-200 dark:border-zinc-800 bg-transparent focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-all text-zinc-800 dark:text-zinc-200 font-mono">
+          </div>
+
+          <div>
+            <label class="block text-[10px] font-mono uppercase tracking-wider text-zinc-400 dark:text-zinc-505 mb-1">Status Publikasi</label>
+            <select id="post-status" class="w-full px-3 py-2 text-xs rounded-lg border border-zinc-200 dark:border-zinc-800 bg-transparent focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-all text-zinc-800 dark:text-zinc-200 cursor-pointer">
+              <option value="published" selected={post.status === "published"}>Published (Aktif)</option>
+              <option value="draft" selected={post.status === "draft"}>Draft (Disembunyikan)</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Kolom Editor Kanan (2/3 Lebar) -->
+        <div class="md:col-span-2 flex flex-col space-y-2">
+          <label class="block text-[10px] font-mono uppercase tracking-wider text-zinc-400 dark:text-zinc-505 mb-1">Konten Publikasi (Mendukung upload gambar lewat toolbar)</label>
+          
+          <!-- Quill Editor Container -->
+          <div class="w-full bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800 flex flex-col h-[380px] overflow-hidden">
+            <!-- Kita sisipkan HTML asli artikel dari database agar otomatis dimuat oleh Quill -->
+            <div id="quill-editor" class="text-sm text-zinc-800 dark:text-zinc-200 h-full overflow-y-auto">
+              <Fragment set:html={post.content} />
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Submit & Error Messages -->
+      <div id="error-message" class="hidden text-xs text-red-500 font-medium text-center"></div>
+
+      <div class="border-t border-zinc-200 dark:border-zinc-800 pt-6 flex justify-end space-x-3">
+        <a href="/admin" class="px-4 py-2 text-xs font-medium rounded-lg border border-zinc-200 dark:border-zinc-800 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-900 transition-colors">
+          Batal
+        </a>
+        <button type="submit" class="px-4 py-2 text-xs font-medium rounded-lg bg-zinc-900 text-zinc-50 hover:bg-zinc-800 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-200 transition-colors shadow-sm cursor-pointer">
+          Simpan Perubahan
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <script>
+    import { supabase } from "../../../lib/supabase";
+
+    const editorContent = document.getElementById("editor-content");
+    const editForm = document.getElementById("edit-form");
+    const titleInput = document.getElementById("post-title") as HTMLInputElement;
+    const slugInput = document.getElementById("post-slug") as HTMLInputElement;
+    const errorMsg = document.getElementById("error-message");
+
+    const postId = editForm?.getAttribute("data-id");
+    let quill: any;
+
+    // 1. Pelindung Rute Keamanan
+    async function checkAuth() {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        window.location.href = "/admin/login";
+      } else {
+        editorContent?.classList.remove("opacity-0");
+        initQuill();
+      }
+    }
+
+    // 2. Inisialisasi Quill Editor
+    function initQuill() {
+      // @ts-ignore
+      if (typeof Quill !== "undefined") {
+        // @ts-ignore
+        quill = new Quill('#quill-editor', {
+          theme: 'snow',
+          placeholder: 'Tuliskan tulisan Anda...',
+          modules: {
+            toolbar: [
+              [{ 'header': [1, 2, 3, false] }],
+              ['bold', 'italic', 'underline', 'strike'],
+              ['blockquote', 'code-block'],
+              [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+              ['link', 'image'],
+              ['clean']
+            ]
+          }
+        });
+      }
+    }
+
+    // 3. Auto Generate Slug dari Judul
+    titleInput?.addEventListener("input", () => {
+      const value = titleInput.value;
+      const slug = value
+        .toLowerCase()
+        .replace(/[^a-z0-9\s-]/g, "")
+        .replace(/\s+/g, "-")
+        .replace(/-+/g, "-")
+        .trim();
+      if (slugInput) slugInput.value = slug;
+    });
+
+    // 4. Form Submit Handler (Tembak ke database Supabase)
+    editForm?.addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      if (errorMsg) {
+        errorMsg.classList.add("hidden");
+        errorMsg.innerText = "";
+      }
+
+      const title = titleInput.value;
+      const slug = slugInput.value;
+      const category = (document.getElementById("post-category") as HTMLSelectElement).value;
+      const read_time = (document.getElementById("post-readtime") as HTMLInputElement).value;
+      const rawTags = (document.getElementById("post-tags") as HTMLInputElement).value;
+      const image = (document.getElementById("post-image") as HTMLInputElement).value;
+      const status = (document.getElementById("post-status") as HTMLSelectElement).value;
+      
+      const content = quill ? quill.root.innerHTML : "";
+
+      const tags = rawTags
+        .split(",")
+        .map(tag => tag.trim())
+        .filter(tag => tag !== "");
+
+      // Eksekusi UPDATE ke Supabase
+      const { error } = await supabase
+        .from("posts")
+        .update({
+          title,
+          slug,
+          category,
+          read_time,
+          tags,
+          image: image || "",
+          status,
+          content
+        })
+        .eq("id", postId);
+
+      if (error) {
+        if (errorMsg) {
+          errorMsg.innerText = "Gagal memperbarui: " + error.message;
+          errorMsg.classList.remove("hidden");
+        }
+      } else {
+        window.location.href = "/admin";
+      }
+    });
+
+    // Jalankan proteksi otorisasi
+    checkAuth();
+  </script>
+</AdminLayout>

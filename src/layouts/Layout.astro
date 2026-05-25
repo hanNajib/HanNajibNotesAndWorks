@@ -1,23 +1,273 @@
-<!doctype html>
-<html lang="en">
+---
+import "../styles/global.css";
+import {
+	Sun,
+	Moon,
+	Mail,
+	MapPin,
+	Github,
+	Youtube,
+	Instagram,
+} from "lucide-astro";
+
+interface Props {
+	title?: string;
+	description?: string;
+	ogImage?: string;
+	ogType?: "website" | "article";
+	showHero?: boolean;
+}
+const {
+	title = "HanNajib — Notes, Works, TIL & Snaps",
+	description = "Selamat datang di ruang digital personal HanNajib. Tempat mendokumentasikan pemikiran mendalam (Notes), portofolio proyek (Works), catatan belajar harian (TIL), serta tangkapan visual estetik (Snaps).",
+	ogImage = "https://images.unsplash.com/photo-1509198397868-475647b2a1e5?q=80&w=800&auto=format&fit=crop", // Default branding image
+	ogType = "website",
+	showHero = true,
+} = Astro.props;
+
+const canonicalURL = new URL(
+	Astro.url.pathname,
+	Astro.site || "https://hannajib.dev"
+).toString();
+---
+
+<!DOCTYPE html>
+<html lang="id" class="scroll-smooth">
 	<head>
 		<meta charset="UTF-8" />
 		<meta name="viewport" content="width=device-width" />
 		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<link rel="icon" href="/favicon.ico" />
 		<meta name="generator" content={Astro.generator} />
-		<title>Astro Basics</title>
+
+		<title>{title}</title>	
+		<meta name="description" content={description} />
+		<link rel="canonical" href={canonicalURL} />
+		<meta name="robots" content="index, follow" />
+
+		<meta property="og:title" content={title} />
+		<meta property="og:description" content={description} />
+		<meta property="og:type" content={ogType} />
+		<meta property="og:url" content={canonicalURL} />
+		<meta property="og:image" content={ogImage} />
+		<meta
+			property="og:site_name"
+			content="HanNajib — Notes, Works, TIL & Snaps"
+		/>
+		<meta property="og:locale" content="id_ID" />
+
+		<meta name="twitter:card" content="summary_large_image" />
+		<meta name="twitter:title" content={title} />
+		<meta name="twitter:description" content={description} />
+		<meta name="twitter:image" content={ogImage} />
+
+		<script is:inline>
+			const theme = (() => {
+				if (
+					typeof localStorage !== "undefined" &&
+					localStorage.getItem("theme")
+				) {
+					return localStorage.getItem("theme");
+				}
+				if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
+					return "dark";
+				}
+				return "light";
+			})();
+
+			if (theme === "dark") {
+				document.documentElement.classList.add("dark");
+			} else {
+				document.documentElement.classList.remove("dark");
+			}
+		</script>
+		<slot name="head"/>
 	</head>
-	<body>
-		<slot />
+
+	<body
+		class="bg-stone-50 text-zinc-800 dark:bg-zinc-950 dark:text-zinc-200 min-h-screen flex flex-col antialiased selection:bg-zinc-200 dark:selection:bg-zinc-800"
+	>
+		<div
+			class="max-w-3xl mx-auto px-6 py-12 flex-grow w-full flex flex-col"
+		>
+			<!-- HEADER -->
+			<header class="mb-2">
+				<div class="flex justify-between items-center mb-6">
+					<!-- Brand / Logo -->
+					<a href="/" class="group">
+						<h1
+							class="text-xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50 transition-colors"
+						>
+							HanNajib <span
+								class="text-zinc-400 dark:text-zinc-600 font-jetmono text-sm ml-1"
+								>/ notes, works, til & snaps</span
+							>
+						</h1>
+					</a>
+
+					<!-- Navigation Controls -->
+					<div class="flex items-center space-x-4">
+						<button
+							id="theme-toggle"
+							class="p-2 cursor-pointer rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-900 text-zinc-600 dark:text-zinc-400 transition-colors"
+							title="Ubah Tema"
+						>
+							<span class="hidden dark:block"
+								><Sun class="w-4 h-4" />
+							</span>
+							<span class="block dark:hidden"
+								><Moon class="w-4 h-4" />
+							</span>
+						</button>
+					</div>
+				</div>
+
+				<!-- Intro Section -->
+				{
+					showHero && (
+						<div
+							id="intro-bio"
+							class="border-b border-zinc-200 dark:border-zinc-800 pb-8"
+						>
+							<p class="text-sm text-zinc-600 dark:text-zinc-400 leading-relaxed max-w-2xl">
+								Halo, saya{" "}
+								<span class="text-zinc-900 dark:text-zinc-100 font-semibold">
+									HanNajib
+								</span>
+								. Selamat datang di ruang digital personal saya.
+								Tempat saya mendokumentasikan pemikiran mendalam
+								(<span class="italic font-serif">Notes</span>),
+								portofolio proyek (
+								<span class="italic font-serif">Works</span>),
+								catatan belajar harian <br /> ({" "}
+								<span class="italic font-serif">TIL</span>),
+								serta tangkapan visual estetik (
+								<span class="italic font-serif">Snaps</span>).
+							</p>
+							<div class="mt-4 flex flex-wrap gap-4 text-xs text-zinc-500">
+								<span class="flex items-center gap-1">
+									<MapPin class="w-3.5 h-3.5" /> Indonesia
+								</span>
+								<button
+									onclick="window.scrollToFooter()"
+									class="flex items-center gap-1 hover:text-zinc-850 dark:hover:text-zinc-150 transition-colors"
+								>
+									<Mail class="w-3.5 h-3.5" /> Hubungi Saya
+								</button>
+							</div>
+						</div>
+					)
+				}
+			</header>
+
+			<!-- MAIN CONTENT AREA -->
+			<main class="flex-grow">
+				<slot />
+			</main>
+
+			<!-- FOOTER -->
+			<footer
+				id="footer"
+				class="mt-24 py-8 border-t border-zinc-200 dark:border-zinc-800 text-zinc-500 text-xs"
+			>
+				<div
+					class="flex flex-col md:flex-row justify-between items-center gap-4 text-zinc-500 dark:text-zinc-400"
+				>
+					<div class="flex flex-wrap items-center gap-x-6 gap-y-2">
+						<span class="font-medium"
+							>&copy; {new Date().getFullYear()} HanNajib. All rights
+							reserved.</span
+						>
+						
+						<a
+							href="mailto:hello@hannajib.dev"
+							class="hover:text-zinc-850 dark:hover:text-zinc-150 transition-colors flex items-center gap-1.5"
+						>
+							<Mail class="w-3.5 h-3.5" /> hannajib3@gmail.com
+						</a>
+						<a
+							href="https://github.com/hannajib"
+							target="_blank"
+							class="hover:text-zinc-850 dark:hover:text-zinc-150 transition-colors flex items-center gap-1.5"
+						>
+							<Github class="w-3.5 h-3.5" /> hannajib
+						</a>
+						<a
+							href="https://www.youtube.com/@Hann.Undefined"
+							target="_blank"
+							class="hover:text-zinc-850 dark:hover:text-zinc-150 transition-colors flex items-center gap-1.5"
+						>
+							<Youtube class="w-3.5 h-3.5" /> Hann Undefined.
+						</a>
+						<a
+							href="https://www.instagram.com/handefined/"
+							target="_blank"
+							class="hover:text-zinc-850 dark:hover:text-zinc-150 transition-colors flex items-center gap-1.5"
+						>
+							<Instagram class="w-3.5 h-3.5" /> handefined.
+						</a>
+					</div>
+					<div
+						class="flex space-x-4 font-jetmono text-[11px] text-zinc-400 dark:text-zinc-600"
+					>
+						<button
+							onclick="window.scrollToTop()"
+							class="hover:text-zinc-700 dark:hover:text-zinc-300 transition-colors font-sans flex items-center gap-1"
+						>
+							↑ Kembali ke atas
+						</button>
+					</div>
+				</div>
+			</footer>
+		</div>
+
+		<!-- Script Toggle Tema -->
+		<script>
+			const themeToggleBtn = document.getElementById("theme-toggle");
+
+			themeToggleBtn?.addEventListener("click", () => {
+				document.documentElement.classList.toggle("dark");
+				const isDark =
+					document.documentElement.classList.contains("dark");
+				localStorage.setItem("theme", isDark ? "dark" : "light");
+			});
+		</script>
+
+		<!-- Script Lenis Smooth Scroll -->
+		<script>
+			import Lenis from "lenis";
+
+			// Inisialisasi Lenis
+			const lenis = new Lenis({
+				duration: 1.2,
+				easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+				direction: "vertical",
+				gestureDirection: "vertical",
+				smooth: true,
+				mouseMultiplier: 1,
+				smoothTouch: false,
+				touchMultiplier: 2,
+				infinite: false,
+			});
+
+			function raf(time: number) {
+				lenis.raf(time);
+				requestAnimationFrame(raf);
+			}
+			requestAnimationFrame(raf);
+
+			// Expose helpers ke window
+			(window as any).lenis = lenis;
+
+			(window as any).scrollToTop = () => {
+				lenis.scrollTo(0, { duration: 1 });
+			};
+
+			(window as any).scrollToFooter = () => {
+				const footerEl = document.getElementById("footer");
+				if (footerEl) {
+					lenis.scrollTo(footerEl, { duration: 1.2 });
+				}
+			};
+		</script>
 	</body>
 </html>
-
-<style>
-	html,
-	body {
-		margin: 0;
-		width: 100%;
-		height: 100%;
-	}
-</style>

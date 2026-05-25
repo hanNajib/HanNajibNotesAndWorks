@@ -1,0 +1,102 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=JetBrains+Mono:ital,wght@0,100..800;1,100..800&display=swap');
+@import "tailwindcss";
+
+/* Mengaktifkan Selector-based (Class) Dark Mode khusus untuk Tailwind v4 */
+@variant dark (&:where(.dark, .dark *));
+
+:root {
+    font-family: "Inter", sans-serif;
+}
+
+code,
+pre {
+    font-family: "JetBrains Mono", monospace;
+}
+
+.font-jetmono {
+    font-family: "JetBrains Mono" !important;
+}
+
+body {
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Custom Scrollbar Minimalis */
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.dark ::-webkit-scrollbar-thumb {
+    background: #3f3f46;
+    border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #e4e4e7;
+    border-radius: 3px;
+}
+
+/* Sembunyikan scrollbar pada filter horizontal tapi tetap fungsional */
+.scrollbar-none::-webkit-scrollbar {
+    display: none;
+}
+
+.scrollbar-none {
+    -ms-overflow-style: none;
+    /* IE and Edge */
+    scrollbar-width: none;
+    /* Firefox */
+}
+
+/* Lenis Premium Smooth Scroll CSS */
+html.lenis,
+html.lenis body {
+    height: auto;
+}
+
+.lenis-smooth {
+    scroll-behavior: auto !important;
+}
+
+.lenis-smooth [data-lenis-prevent] {
+    overscroll-behavior: contain;
+}
+
+.lenis-stopped {
+    overflow: hidden;
+}
+
+.lenis-scrolling iframe {
+    pointer-events: none;
+}
+
+/* Quill.js Rich Text Editor Dark Mode Overrides */
+.dark .ql-toolbar {
+    background-color: #18181b !important;
+    border-color: #27272a !important;
+}
+.dark .ql-container {
+    border-color: #27272a !important;
+    background-color: transparent !important;
+}
+.dark .ql-stroke {
+    stroke: #a1a1aa !important;
+}
+.dark .ql-fill {
+    fill: #a1a1aa !important;
+}
+.dark .ql-picker {
+    color: #a1a1aa !important;
+}
+.dark .ql-picker-options {
+    background-color: #18181b !important;
+    border-color: #27272a !important;
+}
+.dark .ql-editor.ql-blank::before {
+    color: #52525b !important;
+}

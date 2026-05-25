@@ -1,0 +1,253 @@
+---
+import AdminLayout from "../../layouts/AdminLayout.astro";
+---
+
+<AdminLayout title="Admin Dashboard — HanNajib">
+  <!-- Wadah Dashboard (Awalnya tersembunyi untuk mencegah kedipan sebelum deteksi login) -->
+  <div id="dashboard-content" class="opacity-0 transition-opacity duration-300 space-y-8 py-4">
+    
+    <!-- Header Dashboard -->
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-zinc-200 dark:border-zinc-800 pb-6">
+      <div>
+        <h2 class="text-xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50">
+          Dashboard Admin
+        </h2>
+        <p class="text-xs text-zinc-400 dark:text-zinc-500 font-mono mt-1">
+          / kelola seluruh catatan & karya
+        </p>
+      </div>
+      
+      <!-- Tombol Aksi Kanan -->
+      <div class="flex items-center space-x-3">
+        <a 
+          href="/admin/tulis" 
+          class="inline-flex items-center justify-center rounded-lg bg-zinc-900 text-zinc-50 hover:bg-zinc-800 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-200 px-4 py-2 text-xs font-semibold shadow-sm transition-all cursor-pointer"
+        >
+          + Tulis Baru
+        </a>
+        <button 
+          id="logout-btn" 
+          class="inline-flex items-center justify-center rounded-lg border border-zinc-200 dark:border-zinc-850 hover:bg-zinc-100 dark:hover:bg-zinc-900 text-zinc-500 hover:text-zinc-900 px-4 py-2 text-xs font-semibold transition-colors cursor-pointer"
+        >
+          Keluar
+        </button>
+      </div>
+    </div>
+
+    <!-- Category Filter Tabs (Dikelompokkan Per Kategori untuk CRUD) -->
+    <div class="flex space-x-1 border-b border-zinc-200/60 dark:border-zinc-800 pb-3 overflow-x-auto whitespace-nowrap scrollbar-none" id="admin-filters">
+      <button data-category="all" class="filter-tab px-3 py-1.5 text-xs font-medium rounded-md transition-all border border-transparent text-zinc-900 dark:text-zinc-50 bg-zinc-100 dark:bg-zinc-900 cursor-pointer">
+        Semua
+      </button>
+      <button data-category="note" class="filter-tab px-3 py-1.5 text-xs font-medium rounded-md transition-all border border-transparent text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-50 cursor-pointer">
+        Notes
+      </button>
+      <button data-category="work" class="filter-tab px-3 py-1.5 text-xs font-medium rounded-md transition-all border border-transparent text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-50 cursor-pointer">
+        Works
+      </button>
+      <button data-category="til" class="filter-tab px-3 py-1.5 text-xs font-medium rounded-md transition-all border border-transparent text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-50 cursor-pointer">
+        TIL
+      </button>
+      <button data-category="snap" class="filter-tab px-3 py-1.5 text-xs font-medium rounded-md transition-all border border-transparent text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-50 cursor-pointer">
+        Snaps
+      </button>
+    </div>
+
+    <!-- Tabel Daftar Artikel Minimalis -->
+    <div class="overflow-x-auto">
+      <table class="w-full text-left border-collapse text-xs">
+        <thead>
+          <tr class="border-b border-zinc-200 dark:border-zinc-800 text-[10px] font-mono uppercase tracking-wider text-zinc-400">
+            <th class="py-3 font-semibold">Judul Publikasi</th>
+            <th class="py-3 font-semibold px-4">Kategori</th>
+            <th class="py-3 font-semibold px-4">Status</th>
+            <th class="py-3 font-semibold text-right">Aksi</th>
+          </tr>
+        </thead>
+        <tbody id="admin-posts-list" class="divide-y divide-zinc-100 dark:divide-zinc-900">
+          <!-- Data postingan akan di-render di sini menggunakan JavaScript -->
+        </tbody>
+      </table>
+      
+      <!-- Loading State -->
+      <div id="table-loading" class="text-center py-12 text-zinc-400 font-mono">
+        Memuat data tulisan...
+      </div>
+      
+      <!-- Empty State -->
+      <div id="table-empty" class="hidden text-center py-16">
+        <p class="text-xs text-zinc-400">Belum ada tulisan di kategori ini.</p>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- JavaScript Sisi Client -->
+  <script>
+    import { supabase } from "../../lib/supabase";
+
+    const dashboard = document.getElementById("dashboard-content");
+    const postsList = document.getElementById("admin-posts-list");
+    const loadingEl = document.getElementById("table-loading");
+    const emptyEl = document.getElementById("table-empty");
+    const logoutBtn = document.getElementById("logout-btn");
+    const filterTabs = document.querySelectorAll(".filter-tab");
+
+    // Global states
+    let allPosts = [];
+    let activeFilter = "all";
+
+    // 1. Pelindung Rute Keamanan
+    async function checkAuth() {
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session) {
+        window.location.href = "/admin/login";
+      } else {
+        dashboard?.classList.remove("opacity-0");
+        fetchAdminPosts();
+      }
+    }
+
+    // 2. Tarik Seluruh Postingan dari database
+    async function fetchAdminPosts() {
+      if (loadingEl) loadingEl.classList.remove("hidden");
+      if (postsList) postsList.innerHTML = "";
+
+      const { data: posts, error } = await supabase
+        .from("posts")
+        .select("id, title, category, status, slug")
+        .order("created_at", { ascending: false });
+
+      if (loadingEl) loadingEl.classList.add("hidden");
+
+      if (error) {
+        console.error("Error:", error.message);
+        return;
+      }
+
+      // Simpan data di global state client
+      allPosts = posts || [];
+      
+      // Render data ter-filter
+      renderFilteredPosts();
+    }
+
+    // 3. Render Post Ter-filter kategori
+    function renderFilteredPosts() {
+      if (postsList) postsList.innerHTML = "";
+
+      const filtered = allPosts.filter(post => activeFilter === "all" || post.category === activeFilter);
+
+      if (filtered.length === 0) {
+        emptyEl?.classList.remove("hidden");
+        return;
+      }
+
+      emptyEl?.classList.add("hidden");
+
+      filtered.forEach((post) => {
+        const row = document.createElement("tr");
+        row.className = "hover:bg-zinc-50/50 dark:hover:bg-zinc-900/30 transition-colors";
+        row.id = `post-row-${post.id}`;
+
+        const isPublished = post.status === "published";
+
+        row.innerHTML = `
+          <td class="py-4 pr-4 font-medium text-zinc-900 dark:text-zinc-100 max-w-xs sm:max-w-md truncate">
+            ${post.title}
+          </td>
+          <td class="py-4 px-4 font-mono uppercase text-[10px] text-zinc-400">
+            ${post.category}
+          </td>
+          <td class="py-4 px-4">
+            <span class="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium border ${
+              isPublished 
+                ? "bg-green-50 text-green-700 border-green-200 dark:bg-green-950/20 dark:text-green-400 dark:border-green-900/30" 
+                : "bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/20 dark:text-amber-400 dark:border-amber-900/30"
+            }">
+              ${post.status}
+            </span>
+          </td>
+          <td class="py-4 text-right space-x-3 font-mono text-[10px]">
+            <a href="/admin/edit/${post.slug}" class="text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-200 transition-colors">EDIT</a>
+            <button data-id="${post.id}" class="delete-btn text-red-500 hover:text-red-750 transition-colors cursor-pointer font-mono font-bold">HAPUS</button>
+          </td>
+        `;
+
+        postsList?.appendChild(row);
+      });
+
+      attachDeleteEvents();
+    }
+
+    // 4. Hubungkan Event Tabs Filter Kategori
+    filterTabs.forEach((tab) => {
+      tab.addEventListener("click", (e) => {
+        const target = e.target as HTMLElement;
+        const category = target.getAttribute("data-category");
+        if (!category) return;
+
+        activeFilter = category;
+
+        // Ganti visual active tab style
+        filterTabs.forEach(t => {
+          t.className = "filter-tab px-3 py-1.5 text-xs font-medium rounded-md transition-all border border-transparent text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-50 cursor-pointer";
+        });
+        target.className = "filter-tab px-3 py-1.5 text-xs font-medium rounded-md transition-all border border-transparent text-zinc-900 dark:text-zinc-50 bg-zinc-100 dark:bg-zinc-900 cursor-pointer";
+
+        // Re-render
+        renderFilteredPosts();
+      });
+    });
+
+    // 5. Logika Hapus Real-time
+    function attachDeleteEvents() {
+      const deleteButtons = document.querySelectorAll(".delete-btn");
+      
+      deleteButtons.forEach((btn) => {
+        btn.addEventListener("click", async (e) => {
+          const id = (e.target as HTMLElement).getAttribute("data-id");
+          if (!id) return;
+
+          const confirmDelete = confirm("Apakah Anda yakin ingin menghapus tulisan ini secara permanen dari database Supabase?");
+          
+          if (confirmDelete) {
+            const { error } = await supabase
+              .from("posts")
+              .delete()
+              .eq("id", id);
+
+            if (error) {
+              alert("Gagal menghapus: " + error.message);
+            } else {
+              // Hapus dari memory local allPosts
+              allPosts = allPosts.filter(p => p.id !== id);
+              
+              // Hapus dari UI dengan animasi
+              const row = document.getElementById(`post-row-${id}`);
+              row?.classList.add("scale-95", "opacity-0");
+              setTimeout(() => {
+                row?.remove();
+                if (postsList?.children.length === 0) {
+                  emptyEl?.classList.remove("hidden");
+                }
+              }, 300);
+            }
+          }
+        });
+      });
+    }
+
+    // 6. Logika Keluar (Logout)
+    logoutBtn?.addEventListener("click", async () => {
+      const { error } = await supabase.auth.signOut();
+      if (!error) {
+        window.location.href = "/";
+      }
+    });
+
+    // Jalankan sistem
+    checkAuth();
+  </script>
+</AdminLayout>

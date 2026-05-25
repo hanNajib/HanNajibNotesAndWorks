@@ -1,11 +1,45 @@
 ---
-import Welcome from '../components/Welcome.astro';
-import Layout from '../layouts/Layout.astro';
+import Layout from "../layouts/Layout.astro";
+import Feed from "../components/Feed.jsx";
+import { supabase } from "../lib/supabase";
 
-// Welcome to Astro! Wondering what to do next? Check out the Astro documentation at https://docs.astro.build
-// Don't want to use any of this? Delete everything in this file, the `assets`, `components`, and `layouts` directories, and start fresh.
+const { data: posts, error } = await supabase
+	.from("posts")
+	.select("*")
+	.order("created_at", { ascending: false });
+
+if (error) {
+	console.error("Gagal Memuat Data");
+}
+
+const jsonLd = {
+	"@context": "https://schema.org",
+	"@type": "WebSite",
+	name: "HanNajib — Notes, Works, TIL & Snaps",
+	url: Astro.url.origin,
+	description:
+		"Selamat datang di ruang digital personal HanNajib. Tempat mendokumentasikan pemikiran mendalam (Notes), portofolio proyek (Works), catatan belajar harian (TIL), serta tangkapan visual estetik (Snaps).",
+	publisher: {
+		"@type": "Person",
+		name: "Ahmad Royhan Najib",
+		alternateName: "Han Najib",
+		jobTitle: "Web Developer",
+		url: Astro.url.origin,
+		sameAs: [
+			"https://github.com/hannajib",
+			"https://www.youtube.com/@Hann.Undefined",
+			"https://www.instagram.com/handefined/",
+		],
+	},
+};
 ---
 
-<Layout>
-	<Welcome />
+<Layout title="HanNajib — Notes & Works" showHero={true}>
+	<script
+		type="application/ld+json"
+		slot="head"
+		set:html={JSON.stringify(jsonLd)}
+	></script>
+
+	<Feed client:load posts={posts || []} />
 </Layout>
