@@ -8,6 +8,7 @@ import {
 	Github,
 	Youtube,
 	Instagram,
+	Linkedin,
 } from "lucide-astro";
 
 interface Props {
@@ -27,19 +28,32 @@ const {
 
 const canonicalURL = new URL(
 	Astro.url.pathname,
-	Astro.site || "https://hannajib.dev"
+	Astro.site || "https://hannajibnotes.vercel.app"
 ).toString();
 ---
 
 <!DOCTYPE html>
 <html lang="id" class="scroll-smooth">
 	<head>
+		<script
+			async
+			src="https://www.googletagmanager.com/gtag/js?id=G-HZ5T7BYE41"
+		></script>
+		<script>
+			window.dataLayer = window.dataLayer || [];
+			function gtag() {
+				dataLayer.push(arguments);
+			}
+			gtag("js", new Date());
+
+			gtag("config", "G-HZ5T7BYE41");
+		</script>
 		<meta charset="UTF-8" />
 		<meta name="viewport" content="width=device-width" />
 		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 		<meta name="generator" content={Astro.generator} />
 
-		<title>{title}</title>	
+		<title>{title}</title>
 		<meta name="description" content={description} />
 		<link rel="canonical" href={canonicalURL} />
 		<meta name="robots" content="index, follow" />
@@ -80,7 +94,7 @@ const canonicalURL = new URL(
 				document.documentElement.classList.remove("dark");
 			}
 		</script>
-		<slot name="head"/>
+		<slot name="head" />
 	</head>
 
 	<body
@@ -138,7 +152,7 @@ const canonicalURL = new URL(
 								(<span class="italic font-serif">Notes</span>),
 								portofolio proyek (
 								<span class="italic font-serif">Works</span>),
-								catatan belajar harian <br /> ({" "}
+								catatan belajar harian ({" "}
 								<span class="italic font-serif">TIL</span>),
 								serta tangkapan visual estetik (
 								<span class="italic font-serif">Snaps</span>).
@@ -147,12 +161,20 @@ const canonicalURL = new URL(
 								<span class="flex items-center gap-1">
 									<MapPin class="w-3.5 h-3.5" /> Indonesia
 								</span>
-								<button
-									onclick="window.scrollToFooter()"
+								<a
+									href="mailto:hannajib3@gmail.com"
+									target="_blank"
 									class="flex items-center gap-1 hover:text-zinc-850 dark:hover:text-zinc-150 transition-colors"
 								>
 									<Mail class="w-3.5 h-3.5" /> Hubungi Saya
-								</button>
+								</a>
+								<a
+									href="https://www.linkedin.com/in/hannajib"
+									target="_blank"
+									class="flex items-center gap-1 hover:text-zinc-850 dark:hover:text-zinc-150 transition-colors"
+								>
+									<Linkedin class="w-3.5 h-3.5" /> LinkedIn
+								</a>
 							</div>
 						</div>
 					)
@@ -177,9 +199,9 @@ const canonicalURL = new URL(
 							>&copy; {new Date().getFullYear()} HanNajib. All rights
 							reserved.</span
 						>
-						
+
 						<a
-							href="mailto:hello@hannajib.dev"
+							href="mailto:hello@hannajibnotes.vercel.app"
 							class="hover:text-zinc-850 dark:hover:text-zinc-150 transition-colors flex items-center gap-1.5"
 						>
 							<Mail class="w-3.5 h-3.5" /> hannajib3@gmail.com

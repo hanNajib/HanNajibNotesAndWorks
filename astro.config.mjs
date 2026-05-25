@@ -8,8 +8,9 @@ import sitemap from "@astrojs/sitemap";
 
 // https://astro.build/config
 export default defineConfig({
+  site: "https://hannajibnotes.vercel.app",
   vite: {
-      plugins: [tailwindcss()],
+    plugins: [tailwindcss()],
   },
 
   integrations: [react(), sitemap()],
