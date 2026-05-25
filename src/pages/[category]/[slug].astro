@@ -9,7 +9,6 @@ export async function getStaticPaths() {
 
     return (
         posts?.map((post) => {
-            // Menyelaraskan string DB dengan parameter URL slug
             const categoryPath =
                 post.category === "note"
                     ? "notes"
@@ -43,25 +42,32 @@ if (!post) {
 
 const formatDate = (dateString) => {
     if (!dateString) return "";
-    const options = { day: "numeric", month: "short", year: "numeric" };
-    return new Date(dateString).toLocaleDateString("id-ID", options);
+
+    return new Date(dateString).toLocaleDateString("id-ID", {
+        day: "numeric",
+        month: "short",
+        year: "numeric",
+    });
 };
 
 const getExcerpt = (htmlContent, maxLength = 155) => {
     if (!htmlContent) return "";
-    // 1. Hapus semua tag HTML menggunakan regex
+
     const cleanText = htmlContent.replace(/<[^>]*>/g, " ");
-    // 2. Rapikan spasi berlebih
     const normalizedSpaces = cleanText.replace(/\s+/g, " ").trim();
-    // 3. Potong sesuai panjang maksimal dan tambahkan ellipsis jika terpotong
-    if (normalizedSpaces.length <= maxLength) return normalizedSpaces;
+
+    if (normalizedSpaces.length <= maxLength) {
+        return normalizedSpaces;
+    }
+
     return normalizedSpaces.substring(0, maxLength).trim() + "...";
 };
 
 const seoDescription = post.excerpt || getExcerpt(post.content);
+
 const seoImage =
     post.image ||
-    "https://images.unsplash.com/photo-1509198397868-475647b2a1e5?q=80&w=800&auto=format&fit=crop"; // fallback default
+    "https://images.unsplash.com/photo-1509198397868-475647b2a1e5?q=80&w=800&auto=format&fit=crop";
 
 const jsonLd = {
     "@context": "https://schema.org",
@@ -74,7 +80,7 @@ const jsonLd = {
     author: {
         "@type": "Person",
         name: "Ahmad Royhan Najib (Han Najib)",
-        url: "https://hannajibnotes.vercel.app", // Ubah sesuai domain aslimu nanti
+        url: "https://hannajibnotes.vercel.app",
     },
     publisher: {
         "@type": "Person",
@@ -87,11 +93,11 @@ const jsonLd = {
     },
 };
 
-const disqusShortname = import.meta.env.PUBLIC_DISQUS_SHORTNAME;
+const disqusShortname =
+    import.meta.env.PUBLIC_DISQUS_SHORTNAME || "hannajib-notes-works";
+
 const pageUrl = Astro.url.href;
 const pageIdentifier = post.id;
-console.log(disqusShortname)
-
 ---
 
 <Layout
@@ -106,51 +112,26 @@ console.log(disqusShortname)
         slot="head"
         set:html={JSON.stringify(jsonLd)}
     ></script>
-    <div class="max-w-2xl mx-auto py-4">
-        <!-- <div class="mb-2">
-            <a
-                href="/"
-                class="inline-flex items-center space-x-2 text-xs font-mono tracking-wider uppercase text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200 transition-all duration-200 group py-1.5 px-3 -ml-3 rounded-md hover:bg-zinc-100/70 dark:hover:bg-zinc-800/50"
-            >
-                <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="2.5"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    class="w-3.5 h-3.5 transform group-hover:-translate-x-0.5 transition-transform duration-200 ease-out flex-shrink-0"
-                >
-                    <path d="M19 12H5M12 19l-7-7 7-7"></path>
-                </svg>
-                <span class="relative top-[0.5px] leading-none"
-                    >Back to feed</span
-                >
-            </a>
-        </div> -->
 
-        <!-- Tampilan Gambar Utama Khusus Kategori Snaps (Gambar ditaruh paling atas ala editorial) -->
+    <div class="max-w-2xl mx-auto py-6">
         {
             post.category === "snap" && post.image && (
-                <div class="mb-8 overflow-hidden rounded-lg border border-zinc-100 dark:border-zinc-800/80 bg-zinc-50 dark:bg-zinc-900/50">
+                <div class="mb-8 overflow-hidden rounded-2xl border border-zinc-200/70 dark:border-zinc-800">
                     <img
                         src={post.image}
                         alt={post.title}
-                        class="w-full max-h-[450px] object-cover"
+                        class="w-full max-h-[500px] object-cover"
                     />
                 </div>
             )
         }
 
-        <!-- Isi Artikel Bacaan Utama -->
-        <article class="prose dark:prose-invert max-w-none">
-            <header class="mb-6">
-                <!-- Metadata Atas Lembut & Monospace -->
+        <article>
+            <header class="mb-8">
                 <div
-                    class="flex items-center space-x-2 text-xs text-zinc-400 font-mono mb-2.5"
+                    class="flex items-center gap-2 text-xs font-mono text-zinc-400 mb-3"
                 >
-                    <span class="lowercase text-zinc-500 dark:text-zinc-400">
+                    <span class="lowercase">
                         {
                             post.category === "note"
                                 ? "notes"
@@ -161,8 +142,11 @@ console.log(disqusShortname)
                                 : "snaps"
                         }
                     </span>
+
                     <span>/</span>
+
                     <span>{formatDate(post.created_at)}</span>
+
                     {
                         post.read_time && (
                             <>
@@ -174,7 +158,7 @@ console.log(disqusShortname)
                 </div>
 
                 <h1
-                    class="sm:text-3xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100 leading-snug"
+                    class="text-3xl sm:text-4xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100 leading-tight"
                 >
                     {post.title}
                 </h1>
@@ -182,74 +166,65 @@ console.log(disqusShortname)
 
             {
                 post.category !== "snap" && post.image && (
-                    <div class="mb-6 overflow-hidden rounded-lg border border-zinc-100 dark:border-zinc-800/80 bg-zinc-50 dark:bg-zinc-900/50">
+                    <div class="mb-8 overflow-hidden rounded-2xl border border-zinc-200/70 dark:border-zinc-800">
                         <img
                             src={post.image}
                             alt={post.title}
-                            class="w-full max-h-96 object-cover"
+                            class="w-full max-h-[450px] object-cover"
                         />
                     </div>
                 )
             }
 
             <div
-  class="
-    prose prose-zinc dark:prose-invert
-    max-w-none
-
-    leading-7
-
-    prose-p:my-3
-    prose-headings:mb-3
-    prose-headings:mt-7
-
-    prose-h1:text-4xl
-    prose-h2:text-2xl
-    prose-h3:text-xl
-
-    prose-img:rounded-2xl
-    prose-img:my-5
-
-    prose-pre:rounded-xl
-    prose-pre:px-4
-    prose-pre:py-3
-
-    prose-code:before:content-none
-    prose-code:after:content-none
-
-    prose-a:no-underline
-    hover:prose-a:underline
-  "
-  set:html={post.content}
-/>
-
-        {disqusShortname && (
-            <div class="mt-16 pt-8 border-t border-zinc-100 dark:border-zinc-900">
-                <h3 class="text-lg font-bold text-zinc-900 dark:text-zinc-100 mb-6">Diskusi & Komentar</h3>
-                <div id="disqus_thread"></div>
-                
-                <script is:inline define:vars={{ disqusShortname, pageUrl, pageIdentifier }}>
-                    var disqus_config = function () {
-                        this.page.url = pageUrl;
-                        this.page.identifier = pageIdentifier;
-                    };
-                    (function() {
-                        var d = document, s = d.createElement('script');
-                        s.src = 'https://' + disqusShortname + '.disqus.com/embed.js';
-                        s.setAttribute('data-timestamp', +new Date());
-                        (d.head || d.body).appendChild(s);
-                    })();
-                </script>
-                <noscript>
-                    Please enable JavaScript to view the 
-                    <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a>
-                </noscript>
+                class="prose prose-zinc dark:prose-invert max-w-none leading-7 prose-p:my-3 prose-li:my-1 prose-headings:font-bold prose-headings:tracking-tight prose-headings:scroll-mt-24 prose-h1:text-4xl prose-h1:mb-4 prose-h2:text-2xl prose-h2:mt-10 prose-h2:mb-3 prose-h3:text-xl prose-h3:mt-8 prose-h3:mb-2 prose-img:rounded-2xl prose-img:my-6 prose-pre:rounded-2xl prose-pre:px-4 prose-pre:py-4 prose-code:text-[0.9em] prose-code:before:content-none prose-code:after:content-none prose-a:no-underline hover:prose-a:underline"
+                set:html={post.content}
+            >
             </div>
-        )}
-
         </article>
 
-        <div class="mt-12 pt-4 border-t border-zinc-100 dark:border-zinc-900">
-        </div>
+        <section
+            class="mt-20 pt-8 border-t border-zinc-200/70 dark:border-zinc-800 disqus-container"
+        >
+            <h2
+                class="text-lg font-semibold text-zinc-900 dark:text-zinc-100 mb-6"
+            >
+                Diskusi
+            </h2>
+
+            <div id="disqus_thread"></div>
+
+            <script
+                is:inline
+                define:vars={{
+                    disqusShortname,
+                    pageUrl,
+                    pageIdentifier,
+                }}
+            >
+                window.disqus_config = function () {
+                    this.page.url = pageUrl;
+                    this.page.identifier = pageIdentifier;
+                };
+
+                (() => {
+                    if (document.getElementById("disqus-script")) {
+                        return;
+                    }
+
+                    const script = document.createElement("script");
+
+                    script.src = `https://${disqusShortname}.disqus.com/embed.js`;
+
+                    script.id = "disqus-script";
+                    script.async = true;
+                    script.setAttribute("data-timestamp", String(+new Date()));
+
+                    document.body.appendChild(script);
+                })();
+            </script>
+
+            <noscript> Please enable JavaScript to load comments.</noscript>
+        </section>
     </div>
 </Layout>

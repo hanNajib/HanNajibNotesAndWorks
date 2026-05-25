@@ -21,6 +21,24 @@ body {
     transition: background-color 0.3s ease, color 0.3s ease;
 }
 
+#disqus_thread {
+    font-family: "Inter", sans-serif;
+}
+
+/* Custom styling untuk Disqus area guna menghindari parsing oklch crash di Tailwind v4 */
+.disqus-container,
+#disqus_thread {
+    color: rgb(63, 63, 70) !important; /* zinc-700 */
+    background-color: rgb(250, 250, 249) !important; /* stone-50 */
+}
+
+.dark .disqus-container,
+.dark #disqus_thread {
+    color: rgb(228, 228, 231) !important; /* zinc-200 */
+    background-color: rgb(9, 9, 11) !important; /* zinc-950 */
+}
+
+
 /* Custom Scrollbar Minimalis */
 ::-webkit-scrollbar {
     width: 6px;
@@ -80,23 +98,29 @@ html.lenis body {
     background-color: #18181b !important;
     border-color: #27272a !important;
 }
+
 .dark .ql-container {
     border-color: #27272a !important;
     background-color: transparent !important;
 }
+
 .dark .ql-stroke {
     stroke: #a1a1aa !important;
 }
+
 .dark .ql-fill {
     fill: #a1a1aa !important;
 }
+
 .dark .ql-picker {
     color: #a1a1aa !important;
 }
+
 .dark .ql-picker-options {
     background-color: #18181b !important;
     border-color: #27272a !important;
 }
+
 .dark .ql-editor.ql-blank::before {
     color: #52525b !important;
 }
