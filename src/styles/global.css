@@ -171,4 +171,67 @@ html.lenis body {
 .dark .ql-picker-options {
     background-color: #18181b !important;
     border-color: #27272a !important;
-}
+}
+
+/* Memastikan list ul dan ol di dalam konten artikel ter-render dengan peluru & nomor yang presisi */
+.prose ul {
+    list-style-type: disc !important;
+    padding-left: 1.5rem !important;
+    margin-top: 0.75rem !important;
+    margin-bottom: 0.75rem !important;
+}
+
+.prose ol {
+    list-style-type: decimal !important;
+    padding-left: 1.5rem !important;
+    margin-top: 0.75rem !important;
+    margin-bottom: 0.75rem !important;
+}
+
+.prose li {
+    display: list-item !important;
+    margin-top: 0.25rem !important;
+    margin-bottom: 0.25rem !important;
+}
+
+/* Styling Premium untuk Code Block Bawaan Quill v2 di dalam Konten Artikel */
+.prose .ql-code-block-container {
+    background-color: #18181b !important; /* zinc-900 */
+    border: 1px solid #27272a !important; /* zinc-800 */
+    color: #f4f4f5 !important; /* zinc-100 */
+    font-family: "JetBrains Mono", monospace !important;
+    font-size: 0.9rem !important;
+    padding: 1.25rem 1.5rem !important;
+    border-radius: 0.75rem !important;
+    margin: 1.5rem 0 !important;
+    overflow-x: auto !important;
+    line-height: 1.6 !important;
+    text-align: left !important;
+}
+
+.dark .prose .ql-code-block-container {
+    background-color: #09090b !important; /* zinc-950 */
+    border: 1px solid #27272a !important;
+}
+
+.prose .ql-code-block {
+    font-family: "JetBrains Mono", monospace !important;
+    white-space: pre-wrap !important;
+}
+
+/* Styling Premium untuk Blockquote (Kutipan) di dalam Artikel */
+.prose blockquote {
+    border-left: 4px solid rgb(161, 161, 170) !important; /* zinc-400 */
+    padding-left: 1.5rem !important;
+    font-style: italic !important;
+    color: rgb(82, 82, 91) !important; /* zinc-600 */
+    margin: 1.5rem 0 !important;
+    background-color: transparent !important;
+}
+
+.dark .prose blockquote {
+    border-left: 4px solid rgb(63, 63, 70) !important; /* zinc-700 */
+    color: rgb(161, 161, 170) !important; /* zinc-400 */
+}
+
+
