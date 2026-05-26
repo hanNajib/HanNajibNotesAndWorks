@@ -2,20 +2,19 @@
 import AdminLayout from "../../../layouts/AdminLayout.astro";
 import { supabase } from "../../../lib/supabase";
 
-// 1. getStaticPaths untuk menghasilkan rute edit bagi setiap slug tulisan di server
 export async function getStaticPaths() {
-  const { data: posts } = await supabase
-    .from("posts")
-    .select("slug");
+  const { data: posts } = await supabase.from("posts").select("slug");
 
-  return posts?.map((post) => ({
-    params: { slug: post.slug },
-  })) || [];
+  return (
+    posts?.map((post) => ({
+      params: { slug: post.slug },
+    })) || []
+  );
 }
 
 const { slug } = Astro.params;
 
-// 2. Tarik data tulisan yang ada saat ini dari Supabase
+// Tarik data tulisan yang ada saat ini dari Supabase
 const { data: post } = await supabase
   .from("posts")
   .select("*")
@@ -31,300 +30,524 @@ const tagsString = post.tags ? post.tags.join(", ") : "";
 ---
 
 <AdminLayout title={`Edit: ${post.title} — HanNajib`}>
-  <!-- Load Quill CSS and JS from CDN -->
-  <link href="https://cdn.jsdelivr.net/npm/quill@2.0.2/dist/quill.snow.css" rel="stylesheet" is:inline>
-  <script src="https://cdn.jsdelivr.net/npm/quill@2.0.2/dist/quill.js" is:inline></script>
+  <link
+    href="https://cdn.jsdelivr.net/npm/quill@2.0.2/dist/quill.snow.css"
+    rel="stylesheet"
+    is:inline
+  />
+  <script src="https://cdn.jsdelivr.net/npm/quill@2.0.2/dist/quill.js" is:inline
+  ></script>
 
-  <div id="editor-content" class="opacity-0 transition-opacity duration-300 space-y-8 py-4">
-    <!-- Header -->
-    <div class="border-b border-zinc-200 dark:border-zinc-800 pb-6 flex items-center justify-between">
+  <div
+    id="editor-content"
+    class="opacity-0 transition-opacity duration-300 space-y-8 py-4"
+  >
+    <div
+      class="border-b border-zinc-200 dark:border-zinc-800 pb-6 flex items-center justify-between"
+    >
       <div>
-        <h2 class="text-xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50">
+        <h2
+          class="text-xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50"
+        >
           Ubah Publikasi
         </h2>
         <p class="text-xs text-zinc-400 dark:text-zinc-500 font-mono mt-1">
           / lakukan penyesuaian konten Anda dengan Rich Text Editor
         </p>
       </div>
-      <a href="/admin" class="text-xs text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200 transition-colors font-mono">
+      <a
+        href="/admin"
+        class="text-xs text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200 transition-colors font-mono"
+      >
         &larr; Batal & Kembali
       </a>
     </div>
 
-    <!-- Form & Editor stacked vertically (Column Layout) -->
     <form id="edit-form" class="space-y-6" data-id={post.id}>
-      
-      <!-- Bagian Atas: Metadata Grid -->
-      <div class="space-y-4 bg-zinc-50/50 dark:bg-zinc-900/30 p-5 rounded-2xl border border-zinc-100 dark:border-zinc-800/80">
-        <h3 class="text-xs font-bold font-mono uppercase tracking-wider text-zinc-550 mb-2">Informasi & Metadata</h3>
-        
-        <!-- Baris 1: Judul (2/3) & Slug (1/3) -->
+      <div
+        class="space-y-4 bg-zinc-50/50 dark:bg-zinc-900/30 p-5 rounded-2xl border border-zinc-100 dark:border-zinc-800/80"
+      >
+        <h3
+          class="text-xs font-bold font-mono uppercase tracking-wider text-zinc-500 mb-2"
+        >
+          Informasi & Metadata
+        </h3>
+
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div class="md:col-span-2">
-            <label class="block text-[10px] font-mono uppercase tracking-wider text-zinc-400 dark:text-zinc-505 mb-1">Judul Artikel</label>
-            <input type="text" id="post-title" required value={post.title} placeholder="Contoh: Belajar Esensi Tipografi UI" class="w-full px-3 py-2 text-xs rounded-lg border border-zinc-200 dark:border-zinc-800 bg-transparent focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-all text-zinc-800 dark:text-zinc-200">
+            <label
+              class="block text-[10px] font-mono uppercase tracking-wider text-zinc-400 mb-1"
+              >Judul Artikel</label
+            >
+            <input
+              type="text"
+              id="post-title"
+              required
+              value={post.title}
+              placeholder="Contoh: Belajar Esensi Tipografi UI"
+              class="w-full px-3 py-2 text-xs rounded-lg border border-zinc-200 dark:border-zinc-800 bg-transparent focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-all text-zinc-800 dark:text-zinc-200"
+            />
           </div>
           <div class="md:col-span-1">
-            <label class="block text-[10px] font-mono uppercase tracking-wider text-zinc-400 dark:text-zinc-505 mb-1">Slug URL (Otomatis)</label>
-            <input type="text" id="post-slug" required value={post.slug} placeholder="belajar-esensi-tipografi-ui" class="w-full px-3 py-2 text-xs rounded-lg border border-zinc-200 dark:border-zinc-800 bg-zinc-100 dark:bg-zinc-900/50 focus:outline-none text-zinc-500 dark:text-zinc-400 font-mono">
+            <label
+              class="block text-[10px] font-mono uppercase tracking-wider text-zinc-400 mb-1"
+              >Slug URL (Otomatis)</label
+            >
+            <input
+              type="text"
+              id="post-slug"
+              required
+              value={post.slug}
+              placeholder="belajar-esensi-tipografi-ui"
+              class="w-full px-3 py-2 text-xs rounded-lg border border-zinc-200 dark:border-zinc-800 bg-zinc-100 dark:bg-zinc-900/50 focus:outline-none text-zinc-500 dark:text-zinc-400 font-mono"
+            />
           </div>
         </div>
 
-        <!-- Baris 2: Kategori, Waktu Baca, Tags, Status (masing-masing 1/4) -->
         <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
           <div>
-            <label class="block text-[10px] font-mono uppercase tracking-wider text-zinc-400 dark:text-zinc-505 mb-1">Kategori</label>
-            <select id="post-category" class="w-full px-3 py-2 text-xs rounded-lg border border-zinc-200 dark:border-zinc-800 bg-transparent focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-all text-zinc-800 dark:text-zinc-200 cursor-pointer">
-              <option value="note" selected={post.category === "note"}>Note</option>
-              <option value="work" selected={post.category === "work"}>Work</option>
-              <option value="til" selected={post.category === "til"}>TIL</option>
-              <option value="snap" selected={post.category === "snap"}>Snap</option>
+            <label
+              class="block text-[10px] font-mono uppercase tracking-wider text-zinc-400 mb-1"
+              >Kategori</label
+            >
+            <select
+              id="post-category"
+              class="w-full px-3 py-2 text-xs rounded-lg border border-zinc-200 dark:border-zinc-800 bg-transparent focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-all text-zinc-800 dark:text-zinc-200 cursor-pointer"
+            >
+              <option value="note" selected={post.category === "note"}
+                >Note</option
+              >
+              <option value="work" selected={post.category === "work"}
+                >Work</option
+              >
+              <option value="til" selected={post.category === "til"}>TIL</option
+              >
+              <option value="snap" selected={post.category === "snap"}
+                >Snap</option
+              >
             </select>
           </div>
           <div>
-            <label class="block text-[10px] font-mono uppercase tracking-wider text-zinc-400 dark:text-zinc-505 mb-1">Waktu Baca</label>
-            <input type="text" id="post-readtime" required value={post.read_time} placeholder="4 min read" class="w-full px-3 py-2 text-xs rounded-lg border border-zinc-200 dark:border-zinc-800 bg-transparent focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-all text-zinc-800 dark:text-zinc-200">
+            <label
+              class="block text-[10px] font-mono uppercase tracking-wider text-zinc-400 mb-1"
+              >Waktu Baca</label
+            >
+            <input
+              type="text"
+              id="post-readtime"
+              required
+              value={post.read_time}
+              placeholder="4 min read"
+              class="w-full px-3 py-2 text-xs rounded-lg border border-zinc-200 dark:border-zinc-800 bg-transparent focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-all text-zinc-800 dark:text-zinc-200"
+            />
           </div>
           <div>
-            <label class="block text-[10px] font-mono uppercase tracking-wider text-zinc-400 dark:text-zinc-505 mb-1">Tags (Pemisah Koma)</label>
-            <input type="text" id="post-tags" required value={tagsString} placeholder="design, minimalis, web" class="w-full px-3 py-2 text-xs rounded-lg border border-zinc-200 dark:border-zinc-800 bg-transparent focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-all text-zinc-800 dark:text-zinc-200">
+            <label
+              class="block text-[10px] font-mono uppercase tracking-wider text-zinc-400 mb-1"
+              >Tags (Pemisah Koma)</label
+            >
+            <input
+              type="text"
+              id="post-tags"
+              required
+              value={tagsString}
+              placeholder="design, minimalis, web"
+              class="w-full px-3 py-2 text-xs rounded-lg border border-zinc-200 dark:border-zinc-800 bg-transparent focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-all text-zinc-800 dark:text-zinc-200"
+            />
           </div>
           <div>
-            <label class="block text-[10px] font-mono uppercase tracking-wider text-zinc-400 dark:text-zinc-55 mb-1">Status Publikasi</label>
-            <select id="post-status" class="w-full px-3 py-2 text-xs rounded-lg border border-zinc-200 dark:border-zinc-800 bg-transparent focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-all text-zinc-800 dark:text-zinc-200 cursor-pointer">
-              <option value="published" selected={post.status === "published"}>Published (Aktif)</option>
-              <option value="draft" selected={post.status === "draft"}>Draft (Disembunyikan)</option>
+            <label
+              class="block text-[10px] font-mono uppercase tracking-wider text-zinc-400 mb-1"
+              >Status Publikasi</label
+            >
+            <select
+              id="post-status"
+              class="w-full px-3 py-2 text-xs rounded-lg border border-zinc-200 dark:border-zinc-800 bg-transparent focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-all text-zinc-800 dark:text-zinc-200 cursor-pointer"
+            >
+              <option value="published" selected={post.status === "published"}
+                >Published (Aktif)</option
+              >
+              <option value="draft" selected={post.status === "draft"}
+                >Draft (Disembunyikan)</option
+              >
             </select>
           </div>
         </div>
 
-        <!-- Baris 3: Gambar Cover Uploader -->
         <div class="border-t border-zinc-200/50 dark:border-zinc-800/50 pt-4">
-          <label class="block text-[10px] font-mono uppercase tracking-wider text-zinc-400 dark:text-zinc-55 mb-1">Gambar Cover Artikel</label>
+          <label
+            class="block text-[10px] font-mono uppercase tracking-wider text-zinc-400 mb-1"
+            >Gambar Cover Artikel</label
+          >
           <div class="flex flex-col md:flex-row md:items-start gap-4">
             <div class="space-y-3 flex-shrink-0">
               <div class="flex items-center gap-2">
-                <button type="button" id="btn-upload-cover" class="px-3 py-1.5 text-xs font-medium rounded-lg border border-zinc-200 dark:border-zinc-800 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-900 transition-all flex items-center gap-1.5 cursor-pointer">
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-3.5 h-3.5">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5m-13.5-9L12 3m0 0 4.5 4.5M12 3v13.5" />
+                <button
+                  type="button"
+                  id="btn-upload-cover"
+                  class="px-3 py-1.5 text-xs font-medium rounded-lg border border-zinc-200 dark:border-zinc-800 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-900 transition-all flex items-center gap-1.5 cursor-pointer"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke-width="2"
+                    stroke="currentColor"
+                    class="w-3.5 h-3.5"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5m-13.5-9L12 3m0 0 4.5 4.5M12 3v13.5"
+                    ></path>
                   </svg>
                   Pilih Gambar Cover
                 </button>
-                <button type="button" id="btn-clear-cover" class="hidden px-2.5 py-1.5 text-xs font-medium rounded-lg border border-red-200 dark:border-red-900/50 text-red-650 dark:text-red-450 hover:bg-red-50 dark:hover:bg-red-950/30 transition-all cursor-pointer" title="Hapus Gambar">
+                <button
+                  type="button"
+                  id="btn-clear-cover"
+                  class="hidden px-2.5 py-1.5 text-xs font-medium rounded-lg border border-red-200 dark:border-red-900/50 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 transition-all cursor-pointer"
+                  title="Hapus Gambar"
+                >
                   Hapus
                 </button>
               </div>
-              <input type="file" id="cover-file-input" accept="image/*" class="hidden">
-              <input type="hidden" id="post-image" name="image" value={post.image}>
+              <input
+                type="file"
+                id="cover-file-input"
+                accept="image/*"
+                class="hidden"
+              />
+              <input
+                type="hidden"
+                id="post-image"
+                name="image"
+                value={post.image}
+              />
             </div>
-            
-            <div id="cover-preview-container" class="hidden relative aspect-video w-full max-w-[280px] rounded-xl overflow-hidden border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/50 shadow-inner">
-              <img id="cover-preview" class="w-full h-full object-cover">
+
+            <div
+              id="cover-preview-container"
+              class="hidden relative aspect-video w-full max-w-[280px] rounded-xl overflow-hidden border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/50 shadow-inner"
+            >
+              <img id="cover-preview" class="w-full h-full object-cover" />
             </div>
           </div>
         </div>
       </div>
 
-      <!-- Bagian Bawah: Quill Editor Penuh 100% -->
       <div class="flex flex-col space-y-2">
-        <label class="block text-[10px] font-mono uppercase tracking-wider text-zinc-400 dark:text-zinc-55">Konten Publikasi (Mendukung upload gambar lewat toolbar)</label>
-        
-        <!-- Quill Editor Container (rounded-xl & memanjang h-480px) -->
-        <div class="w-full bg-white dark:bg-zinc-950 rounded-xl border border-zinc-200 dark:border-zinc-800 flex flex-col h-[480px] overflow-hidden shadow-sm">
-          <!-- Kita sisipkan HTML asli artikel dari database agar otomatis dimuat oleh Quill -->
-          <div id="quill-editor" class="text-sm text-zinc-800 dark:text-zinc-200 h-full overflow-y-auto">
+        <label
+          class="block text-[10px] font-mono uppercase tracking-wider text-zinc-400"
+          >Konten Publikasi (Mendukung upload gambar lewat toolbar)</label
+        >
+
+        <div
+          class="w-full bg-white dark:bg-zinc-950 rounded-xl border border-zinc-200 dark:border-zinc-800 flex flex-col h-[480px] overflow-hidden shadow-sm"
+        >
+          <div
+            id="quill-editor"
+            class="text-sm text-zinc-800 dark:text-zinc-200 h-full overflow-y-auto"
+          >
             <Fragment set:html={post.content} />
           </div>
         </div>
 
-      <!-- Submit & Error Messages -->
-      <div id="error-message" class="hidden text-xs text-red-500 font-medium text-center"></div>
+        <div
+          id="error-message"
+          class="hidden text-xs text-red-500 font-medium text-center"
+        >
+        </div>
 
-      <div class="border-t border-zinc-200 dark:border-zinc-800 pt-6 flex justify-end space-x-3">
-        <a href="/admin" class="px-4 py-2 text-xs font-medium rounded-lg border border-zinc-200 dark:border-zinc-800 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-900 transition-colors">
-          Batal
-        </a>
-        <button type="submit" class="px-4 py-2 text-xs font-medium rounded-lg bg-zinc-900 text-zinc-50 hover:bg-zinc-800 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-200 transition-colors shadow-sm cursor-pointer">
-          Simpan Perubahan
-        </button>
+        <div
+          class="border-t border-zinc-200 dark:border-zinc-800 pt-6 flex justify-end space-x-3"
+        >
+          <a
+            href="/admin"
+            class="px-4 py-2 text-xs font-medium rounded-lg border border-zinc-200 dark:border-zinc-800 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-900 transition-colors"
+          >
+            Batal
+          </a>
+          <button
+            type="submit"
+            class="px-4 py-2 text-xs font-medium rounded-lg bg-zinc-900 text-zinc-50 hover:bg-zinc-800 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-200 transition-colors shadow-sm cursor-pointer"
+          >
+            Simpan Perubahan
+          </button>
+        </div>
       </div>
     </form>
-  </div>
 
-  <script>
-    import { supabase } from "../../../lib/supabase";
+    <script>
+      import { supabase } from "../../../lib/supabase";
 
-    const editorContent = document.getElementById("editor-content");
-    const editForm = document.getElementById("edit-form");
-    const titleInput = document.getElementById("post-title") as HTMLInputElement;
-    const slugInput = document.getElementById("post-slug") as HTMLInputElement;
-    const errorMsg = document.getElementById("error-message");
+      const editorContent = document.getElementById("editor-content");
+      const editForm = document.getElementById("edit-form");
+      const titleInput = document.getElementById(
+        "post-title"
+      ) as HTMLInputElement;
+      const slugInput = document.getElementById(
+        "post-slug"
+      ) as HTMLInputElement;
+      const errorMsg = document.getElementById("error-message");
 
-    // Elemen Upload Cover
-    const btnUploadCover = document.getElementById("btn-upload-cover");
-    const btnClearCover = document.getElementById("btn-clear-cover");
-    const coverFileInput = document.getElementById("cover-file-input") as HTMLInputElement;
-    const coverPreviewContainer = document.getElementById("cover-preview-container");
-    const coverPreview = document.getElementById("cover-preview") as HTMLImageElement;
-    const postImageInput = document.getElementById("post-image") as HTMLInputElement;
+      // Elemen Upload Cover
+      const btnUploadCover = document.getElementById("btn-upload-cover");
+      const btnClearCover = document.getElementById("btn-clear-cover");
+      const coverFileInput = document.getElementById(
+        "cover-file-input"
+      ) as HTMLInputElement;
+      const coverPreviewContainer = document.getElementById(
+        "cover-preview-container"
+      );
+      const coverPreview = document.getElementById(
+        "cover-preview"
+      ) as HTMLImageElement;
+      const postImageInput = document.getElementById(
+        "post-image"
+      ) as HTMLInputElement;
 
-    const postId = editForm?.getAttribute("data-id");
-    let quill: any;
+      const postId = editForm?.getAttribute("data-id");
+      let quill: any;
 
-    // 1. Pelindung Rute Keamanan
-    async function checkAuth() {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
-        window.location.href = "/admin/login";
-      } else {
-        editorContent?.classList.remove("opacity-0");
-        initQuill();
-        initCoverPreview();
+      // 1. Pelindung Rute Keamanan
+      async function checkAuth() {
+        const {
+          data: { session },
+        } = await supabase.auth.getSession();
+        if (!session) {
+          window.location.href = "/admin/login";
+        } else {
+          editorContent?.classList.remove("opacity-0");
+          initQuill();
+          initCoverPreview();
+        }
       }
-    }
 
-    // 2. Inisialisasi Quill Editor
-    function initQuill() {
-      // @ts-ignore
-      if (typeof Quill !== "undefined") {
-        // @ts-ignore
-        quill = new Quill('#quill-editor', {
-          theme: 'snow',
-          placeholder: 'Tuliskan tulisan Anda...',
-          modules: {
-            toolbar: [
-              [{ 'header': [1, 2, 3, false] }],
-              ['bold', 'italic', 'underline', 'strike'],
-              ['blockquote', 'code-block'],
-              [{ 'list': 'ordered'}, { 'list': 'bullet' }],
-              ['link', 'image'],
-              ['clean']
-            ]
+      // Mendaftarkan Format Custom Alert ke Quill
+      const Block = Quill.import("blots/block");
+
+      class AlertBlot extends Block {
+        static create(value) {
+          const node = super.create();
+          node.setAttribute("class", "md-alert");
+          if (typeof value === "string") {
+            node.setAttribute("data-alert", value);
           }
-        });
+          return node;
+        }
+        static formats(node) {
+          return node.getAttribute("data-alert");
+        }
+
+        format(name, value) {
+          if (name === "alert") {
+            if (value) {
+              this.domNode.setAttribute("data-alert", value);
+            } else {
+              // Jika user memilih "Teks Biasa" (false), kembalikan menjadi paragraf normal
+              this.replaceWith("block");
+            }
+          } else {
+            super.format(name, value);
+          }
+        }
       }
-    }
 
-    // Inisialisasi Preview Gambar Cover Jika Ada Data Lama
-    function initCoverPreview() {
-      const oldImage = postImageInput?.value;
-      if (oldImage) {
-        if (coverPreview) coverPreview.src = oldImage;
-        coverPreviewContainer?.classList.remove("hidden");
-        btnClearCover?.classList.remove("hidden");
+      AlertBlot.blotName = "alert";
+      AlertBlot.tagName = "div";
+
+      Quill.register(AlertBlot);
+
+      // 2. Inisialisasi Quill Editor & Register Custom Blot
+      function initQuill() {
+        // @ts-ignore
+        if (typeof Quill !== "undefined") {
+          // @ts-ignore
+          const QuillLib = Quill;
+          const BlockBlot = QuillLib.import("blots/block");
+
+          // Definisikan AlertBlot di sisi client
+          class AlertBlot extends BlockBlot {
+            static create(value: any) {
+              const node = super.create();
+              node.setAttribute("class", "md-alert");
+              if (typeof value === "string") {
+                node.setAttribute("data-alert", value);
+              }
+              return node;
+            }
+            static formats(node: HTMLElement) {
+              return node.getAttribute("data-alert");
+            }
+          }
+          AlertBlot.blotName = "alert";
+          AlertBlot.tagName = "div";
+
+          QuillLib.register(AlertBlot);
+
+          quill = new QuillLib("#quill-editor", {
+            theme: "snow",
+            placeholder: "Tuliskan tulisan Anda...",
+            modules: {
+              toolbar: [
+                [{ header: [1, 2, 3, false] }],
+                ["bold", "italic", "underline", "strike"],
+                ["blockquote", "code-block"],
+                [{ list: "ordered" }, { list: "bullet" }],
+                ["link", "image"],
+                // Mengganti tombol biasa dengan format Dropdown array
+                [
+                  {
+                    alert: [
+                      false,
+                      "note",
+                      "tip",
+                      "important",
+                      "warning",
+                      "caution",
+                    ],
+                  },
+                ],
+                ["clean"],
+              ],
+              // HAPUS blok "handlers: { alert: function()... }" karena kita tidak memerlukannya lagi!
+              // Quill otomatis tahu cara menangani format 'alert' berdasarkan Custom Blot yang kita daftarkan di Langkah 2.
+            },
+          });
+        }
       }
-    }
 
-    // Trigger input file saat tombol diklik
-    btnUploadCover?.addEventListener("click", () => {
-      coverFileInput?.click();
-    });
-
-    // Handle pembacaan file gambar cover (Base64)
-    coverFileInput?.addEventListener("change", () => {
-      const file = coverFileInput.files?.[0];
-      if (file) {
-        const reader = new FileReader();
-        reader.onload = (event) => {
-          const base64String = event.target?.result as string;
-          
-          if (coverPreview) coverPreview.src = base64String;
-          if (postImageInput) postImageInput.value = base64String;
-          
+      // Inisialisasi Preview Gambar Cover Jika Ada Data Lama
+      function initCoverPreview() {
+        const oldImage = postImageInput?.value;
+        if (oldImage) {
+          if (coverPreview) coverPreview.src = oldImage;
           coverPreviewContainer?.classList.remove("hidden");
           btnClearCover?.classList.remove("hidden");
-        };
-        reader.readAsDataURL(file);
-      }
-    });
-
-    // Hapus gambar cover
-    btnClearCover?.addEventListener("click", () => {
-      if (coverFileInput) coverFileInput.value = "";
-      if (postImageInput) postImageInput.value = "";
-      if (coverPreview) coverPreview.src = "";
-      
-      coverPreviewContainer?.classList.add("hidden");
-      btnClearCover?.classList.add("hidden");
-    });
-
-    // 3. Auto Generate Slug dari Judul
-    titleInput?.addEventListener("input", () => {
-      const value = titleInput.value;
-      const slug = value
-        .toLowerCase()
-        .replace(/[^a-z0-9\s-]/g, "")
-        .replace(/\s+/g, "-")
-        .replace(/-+/g, "-")
-        .trim();
-      if (slugInput) slugInput.value = slug;
-    });
-
-    // 4. Form Submit Handler (Tembak ke database Supabase)
-    editForm?.addEventListener("submit", async (e) => {
-      e.preventDefault();
-
-      if (errorMsg) {
-        errorMsg.classList.add("hidden");
-        errorMsg.innerText = "";
+        }
       }
 
-      // Ambil tombol submit untuk efek loading
-      const btnSubmit = editForm.querySelector("button[type='submit']") as HTMLButtonElement;
-      const originalText = btnSubmit.innerHTML;
-      btnSubmit.disabled = true;
-      btnSubmit.innerHTML = `
+      // Trigger input file saat tombol diklik
+      btnUploadCover?.addEventListener("click", () => {
+        coverFileInput?.click();
+      });
+
+      // Handle pembacaan file gambar cover (Base64)
+      coverFileInput?.addEventListener("change", () => {
+        const file = coverFileInput.files?.[0];
+        if (file) {
+          const reader = new FileReader();
+          reader.onload = (event) => {
+            const base64String = event.target?.result as string;
+
+            if (coverPreview) coverPreview.src = base64String;
+            if (postImageInput) postImageInput.value = base64String;
+
+            coverPreviewContainer?.classList.remove("hidden");
+            btnClearCover?.classList.remove("hidden");
+          };
+          reader.readAsDataURL(file);
+        }
+      });
+
+      // Hapus gambar cover
+      btnClearCover?.addEventListener("click", () => {
+        if (coverFileInput) coverFileInput.value = "";
+        if (postImageInput) postImageInput.value = "";
+        if (coverPreview) coverPreview.src = "";
+
+        coverPreviewContainer?.classList.add("hidden");
+        btnClearCover?.classList.add("hidden");
+      });
+
+      // 3. Auto Generate Slug dari Judul
+      titleInput?.addEventListener("input", () => {
+        const value = titleInput.value;
+        const slug = value
+          .toLowerCase()
+          .replace(/[^a-z0-9\s-]/g, "")
+          .replace(/\s+/g, "-")
+          .replace(/-+/g, "-")
+          .trim();
+        if (slugInput) slugInput.value = slug;
+      });
+
+      // 4. Form Submit Handler
+      editForm?.addEventListener("submit", async (e) => {
+        e.preventDefault();
+
+        if (errorMsg) {
+          errorMsg.classList.add("hidden");
+          errorMsg.innerText = "";
+        }
+
+        const btnSubmit = editForm.querySelector(
+          "button[type='submit']"
+        ) as HTMLButtonElement;
+        const originalText = btnSubmit.innerHTML;
+        btnSubmit.disabled = true;
+        btnSubmit.innerHTML = `
         <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-zinc-900 dark:text-zinc-50 inline-block align-middle" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
           <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
           <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
         </svg>
-        Menyimpan...
-      `;
+        Menyimpan...`;
 
-      const title = titleInput.value;
-      const slug = slugInput.value;
-      const category = (document.getElementById("post-category") as HTMLSelectElement).value;
-      const read_time = (document.getElementById("post-readtime") as HTMLInputElement).value;
-      const rawTags = (document.getElementById("post-tags") as HTMLInputElement).value;
-      const image = (document.getElementById("post-image") as HTMLInputElement).value;
-      const status = (document.getElementById("post-status") as HTMLSelectElement).value;
-      
-      const content = quill ? quill.root.innerHTML : "";
+        const title = titleInput.value;
+        const slug = slugInput.value;
+        const category = (
+          document.getElementById("post-category") as HTMLSelectElement
+        ).value;
+        const read_time = (
+          document.getElementById("post-readtime") as HTMLInputElement
+        ).value;
+        const rawTags = (
+          document.getElementById("post-tags") as HTMLInputElement
+        ).value;
+        const image = (
+          document.getElementById("post-image") as HTMLInputElement
+        ).value;
+        const status = (
+          document.getElementById("post-status") as HTMLSelectElement
+        ).value;
 
-      const tags = rawTags
-        .split(",")
-        .map(tag => tag.trim())
-        .filter(tag => tag !== "");
+        const content = quill ? quill.root.innerHTML : "";
 
-      // Eksekusi UPDATE ke Supabase
-      const { error } = await supabase
-        .from("posts")
-        .update({
-          title,
-          slug,
-          category,
-          read_time,
-          tags,
-          image: image || "",
-          status,
-          content
-        })
-        .eq("id", postId);
+        const tags = rawTags
+          .split(",")
+          .map((tag) => tag.trim())
+          .filter((tag) => tag !== "");
 
-      if (error) {
-        if (errorMsg) {
-          errorMsg.innerText = "Gagal memperbarui: " + error.message;
-          errorMsg.classList.remove("hidden");
+        // Eksekusi UPDATE ke Supabase
+        const { error } = await supabase
+          .from("posts")
+          .update({
+            title,
+            slug,
+            category,
+            read_time,
+            tags,
+            image: image || "",
+            status,
+            content,
+          })
+          .eq("id", postId);
+
+        if (error) {
+          if (errorMsg) {
+            errorMsg.innerText = "Gagal memperbarui: " + error.message;
+            errorMsg.classList.remove("hidden");
+          }
+          btnSubmit.disabled = false;
+          btnSubmit.innerHTML = originalText;
+        } else {
+          window.location.href = "/admin";
         }
-        // Kembalikan tombol ke keadaan awal jika gagal
-        btnSubmit.disabled = false;
-        btnSubmit.innerHTML = originalText;
-      } else {
-        window.location.href = "/admin";
-      }
-    });
+      });
 
-    // Jalankan proteksi otorisasi
-    checkAuth();
-  </script>
+      // Jalankan proteksi otorisasi
+      checkAuth();
+    </script>
+  </div>
 </AdminLayout>
