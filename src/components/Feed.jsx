@@ -1,10 +1,14 @@
 import React, { useState } from 'react'
 
 const formatDate = (dateString) => {
-    if(!dateString) return '';
-    const options = { day: 'numeric', month: 'short', year: 'numeric' };
-    return new Date(dateString).toLocaleDateString('id-ID', options);
-}
+    if (!dateString) return "";
+
+    return new Date(dateString).toLocaleDateString("id-ID", {
+        day: "numeric",
+        month: "short",
+        year: "numeric",
+    });
+};
 
 const stripHtml = (html) => {
     if (!html) return '';
@@ -55,14 +59,14 @@ export default function Feed({ posts }) {
                     filteredPosts.map((post) => {
                         const targetUrl = `/${post.category === 'note' ? 'notes/' : post.category === 'work' ? 'works/' : post.category === 'til' ? 'til/' : post.category === 'snap' ? 'snaps/' : ''}${post.slug}`;
                         return (
-                            <article key = { post.id } className = "group border-b border-zinc-100 dark:border-zinc-900 pb-10 transition-all hover:border-zinc-300 dark:hover:border-zinc-700" >
+                            <article key={post.id} className="group border-b border-zinc-100 dark:border-zinc-900 pb-10 transition-all hover:border-zinc-300 dark:hover:border-zinc-700" >
                                 <a href={targetUrl} className="block">
                                     <div className="flex items-center space-x-2 text-xs text-zinc-400 dark:text-zinc-500 font-mono mb-2 uppercase tracking-wider">
                                         <span className="font-bold text-zinc-650 dark:text-zinc-300">{post.category}</span>
                                         <span>&bull;</span>
                                         <span>{formatDate(post.created_at)}</span>
                                         <span>&bull;</span>
-                                        <span>{post.read_time}</span>
+                                        <span>{post.read_time} min read</span>
                                     </div>
                                     <h3 className="text-xl font-bold text-zinc-900 dark:text-zinc-50 group-hover:text-zinc-600 dark:group-hover:text-zinc-300 transition-colors tracking-tight mb-2">
                                         {post.title}

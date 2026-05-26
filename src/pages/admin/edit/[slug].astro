@@ -130,10 +130,10 @@ const tagsString = post.tags ? post.tags.join(", ") : "";
           <div>
             <label
               class="block text-[10px] font-mono uppercase tracking-wider text-zinc-400 mb-1"
-              >Waktu Baca</label
+              >Waktu Baca (menit)</label
             >
             <input
-              type="text"
+              type="number"
               id="post-readtime"
               required
               value={post.read_time}
