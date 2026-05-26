@@ -402,20 +402,20 @@ html.lenis body {
 }
 
 /* ==============================================================
-   ENFORCE PROSE HEADING SIZES (Memaksa Ukuran Heading di Artikel)
+   ENFORCE PROSE HEADING SIZES (Tailwind v4 Way)
    ============================================================== */
 .prose h1 {
-    @apply text-4xl font-extrabold mt-10 mb-5 tracking-tight !important;
+    @apply text-4xl! font-extrabold! mt-10! mb-5! tracking-tight!;
 }
 
 .prose h2 {
-    @apply text-3xl font-bold mt-10 mb-4 tracking-tight !important;
+    @apply text-3xl! font-bold! mt-10! mb-4! tracking-tight!;
 }
 
 .prose h3 {
-    @apply text-2xl font-bold mt-8 mb-3 tracking-tight !important;
+    @apply text-2xl! font-bold! mt-8! mb-3! tracking-tight!;
 }
 
 .prose h4 {
-    @apply text-xl font-bold mt-6 mb-2 tracking-tight !important;
+    @apply text-xl! font-bold! mt-6! mb-2! tracking-tight!;
 }
