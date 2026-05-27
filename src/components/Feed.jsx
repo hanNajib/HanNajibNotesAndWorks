@@ -57,7 +57,7 @@ export default function Feed({ posts }) {
                         <p className="text-sm text-zinc-500">Tidak ada data yang cocok.</p>
                     </div>
                 ) : (
-                    filteredPosts.map((post) => {
+                    filteredPosts.map((post, index) => {
                         const targetUrl = `/${post.category === 'note' ? 'notes/' : post.category === 'work' ? 'works/' : post.category === 'til' ? 'til/' : post.category === 'snap' ? 'snaps/' : ''}${post.slug}`;
                         return (
                             <article key={post.id} className="group border-b border-zinc-100 dark:border-zinc-900 pb-10 transition-all hover:border-zinc-300 dark:hover:border-zinc-700" >
