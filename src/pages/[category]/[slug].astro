@@ -1,4 +1,5 @@
 ---
+export const prerender = true;
 import Layout from "../../layouts/Layout.astro";
 import { supabase } from "../../lib/supabase";
 
@@ -11,8 +12,6 @@ const parseMarkdownAlerts = (htmlContent) => {
     return htmlContent.replace(regex, (match, type, content) => {
         const typeLower = type.toLowerCase();
 
-        // Kita transformasikan menjadi custom HTML
-        // Class 'not-prose' dipakai agar tidak berbenturan dengan CSS bawaan Tailwind Typography
         return `
             <div class="md-alert md-alert-${typeLower} not-prose mb-6 rounded-xl border border-l-4 p-4 text-sm">
                 <div class="md-alert-header font-bold mb-2 uppercase tracking-wide flex items-center gap-2">
