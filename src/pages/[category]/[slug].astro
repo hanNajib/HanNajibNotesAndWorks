@@ -26,9 +26,13 @@ const parseMarkdownAlerts = (htmlContent) => {
 };
 
 export async function getStaticPaths() {
-    const { data: posts } = await supabase
-        .from("posts")
-        .select("slug, category");
+    const { data: posts, error } = await supabase.from("posts").select("*");
+
+    if (error || !posts || posts.length === 0) {
+        throw new Error(
+            "Proses Build Gagal: Tidak dapat mengambil data posts dari Supabase."
+        );
+    }
 
     return (
         posts?.map((post) => {
@@ -46,22 +50,14 @@ export async function getStaticPaths() {
                     category: categoryPath,
                     slug: post.slug,
                 },
+                props: { post },
             };
         }) || []
     );
 }
 
-const { slug } = Astro.params;
-
-const { data: post } = await supabase
-    .from("posts")
-    .select("*")
-    .eq("slug", slug)
-    .single();
-
-if (!post) {
-    return Astro.redirect("/404");
-}
+const { category, slug } = Astro.params;
+const { post } = Astro.props;
 
 const finalContent = parseMarkdownAlerts(post.content);
 
@@ -146,6 +142,8 @@ const pageIdentifier = post.id;
                         src={post.image}
                         alt={post.title}
                         class="w-full max-h-[500px] object-cover"
+                        loading="eager"
+                        decoding="async"
                     />
                 </div>
             )
