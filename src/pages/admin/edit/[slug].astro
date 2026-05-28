@@ -394,6 +394,138 @@ const tagsString = post.tags ? post.tags.join(", ") : "";
     let quill: any;
     let selectedCoverFile: File | null = null; // Menyimpan temporary file cover lokal baru sebelum diunggah saat submit
 
+    // Fungsi untuk menampilkan Custom Modal Sisip Gambar (Premium Tailwind UI)
+    function showImageInsertModal(quillInstance: any) {
+      if (document.getElementById("quill-image-modal")) return;
+
+      // Buat overlay modal
+      const overlay = document.createElement("div");
+      overlay.id = "quill-image-modal";
+      overlay.className = "fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-sm transition-opacity duration-300 opacity-0";
+      
+      overlay.innerHTML = `
+        <div class="bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-2xl w-full max-w-md p-6 shadow-2xl space-y-6 mx-4 transform scale-95 transition-all duration-300">
+          <div class="flex items-center justify-between border-b border-zinc-100 dark:border-zinc-900/50 pb-3">
+            <h3 class="text-xs font-bold text-zinc-900 dark:text-zinc-50 font-mono tracking-wider">/ SISIPKAN GAMBAR</h3>
+            <button type="button" id="modal-close-btn" class="text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 transition-colors text-lg font-bold cursor-pointer">&times;</button>
+          </div>
+          
+          <div class="flex border-b border-zinc-100 dark:border-zinc-900/50">
+            <button type="button" id="tab-upload" class="flex-1 pb-2 text-[10px] font-bold font-mono tracking-wider border-b-2 border-zinc-900 dark:border-zinc-50 text-zinc-900 dark:text-zinc-50 transition-all cursor-pointer">UNGGAH FILE</button>
+            <button type="button" id="tab-url" class="flex-1 pb-2 text-[10px] font-bold font-mono tracking-wider border-b-2 border-transparent text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 transition-all cursor-pointer">TAUTAN URL</button>
+          </div>
+
+          <!-- Tab Unggah -->
+          <div id="content-upload" class="space-y-4 py-2">
+            <div class="border-2 border-dashed border-zinc-200 dark:border-zinc-800 hover:border-zinc-400 dark:hover:border-zinc-600 rounded-xl p-8 text-center cursor-pointer transition-all flex flex-col items-center justify-center group" id="drop-zone">
+              <svg class="h-8 w-8 text-zinc-400 group-hover:text-zinc-600 dark:group-hover:text-zinc-300 transition-colors mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+              <span class="text-xs text-zinc-500 dark:text-zinc-400">Tarik berkas gambar ke sini atau <span class="text-zinc-900 dark:text-zinc-100 font-semibold underline">pilih file</span></span>
+              <input type="file" id="modal-file-input" accept="image/*" class="hidden" />
+            </div>
+          </div>
+
+          <!-- Tab URL -->
+          <div id="content-url" class="hidden space-y-4 py-2">
+            <div class="space-y-1">
+              <label class="block text-[10px] font-mono uppercase tracking-wider text-zinc-400">Alamat (URL) Gambar Eksternal</label>
+              <input type="text" id="modal-url-input" placeholder="https://example.com/gambar.jpg" class="w-full px-3 py-2 text-xs rounded-lg border border-zinc-200 dark:border-zinc-800 bg-transparent focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-all text-zinc-800 dark:text-zinc-200" />
+            </div>
+            <button type="button" id="modal-submit-url" class="w-full py-2 text-xs font-semibold rounded-lg bg-zinc-900 text-zinc-50 hover:bg-zinc-800 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-200 transition-colors shadow-sm cursor-pointer">Sisipkan Gambar</button>
+          </div>
+        </div>
+      `;
+
+      document.body.appendChild(overlay);
+
+      // Trigger animasi masuk
+      setTimeout(() => {
+        overlay.classList.remove("opacity-0");
+        overlay.firstElementChild?.classList.remove("scale-95");
+      }, 10);
+
+      const closeBtn = overlay.querySelector("#modal-close-btn");
+      const tabUpload = overlay.querySelector("#tab-upload") as HTMLButtonElement;
+      const tabUrl = overlay.querySelector("#tab-url") as HTMLButtonElement;
+      const contentUpload = overlay.querySelector("#content-upload");
+      const contentUrl = overlay.querySelector("#content-url");
+      const dropZone = overlay.querySelector("#drop-zone");
+      const fileInput = overlay.querySelector("#modal-file-input") as HTMLInputElement;
+      const urlInput = overlay.querySelector("#modal-url-input") as HTMLInputElement;
+      const submitUrl = overlay.querySelector("#modal-submit-url");
+
+      const closeModal = () => {
+        overlay.firstElementChild?.classList.add("scale-95");
+        overlay.classList.add("opacity-0");
+        setTimeout(() => overlay.remove(), 250);
+      };
+
+      closeBtn?.addEventListener("click", closeModal);
+      overlay.addEventListener("click", (e) => {
+        if (e.target === overlay) closeModal();
+      });
+
+      // Navigasi Tab
+      tabUpload?.addEventListener("click", () => {
+        tabUpload.className = "flex-1 pb-2 text-[10px] font-bold font-mono tracking-wider border-b-2 border-zinc-900 dark:border-zinc-50 text-zinc-900 dark:text-zinc-50 transition-all cursor-pointer";
+        tabUrl.className = "flex-1 pb-2 text-[10px] font-bold font-mono tracking-wider border-b-2 border-transparent text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 transition-all cursor-pointer";
+        contentUpload?.classList.remove("hidden");
+        contentUrl?.classList.add("hidden");
+      });
+
+      tabUrl?.addEventListener("click", () => {
+        tabUrl.className = "flex-1 pb-2 text-[10px] font-bold font-mono tracking-wider border-b-2 border-zinc-900 dark:border-zinc-50 text-zinc-900 dark:text-zinc-50 transition-all cursor-pointer";
+        tabUpload.className = "flex-1 pb-2 text-[10px] font-bold font-mono tracking-wider border-b-2 border-transparent text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 transition-all cursor-pointer";
+        contentUrl?.classList.remove("hidden");
+        contentUpload?.classList.add("hidden");
+        urlInput?.focus();
+      });
+
+      // Submit Tautan Gambar Eksternal
+      submitUrl?.addEventListener("click", () => {
+        const url = urlInput.value.trim();
+        if (url) {
+          const range = quillInstance.getSelection();
+          const index = range ? range.index : quillInstance.getLength();
+          quillInstance.insertEmbed(index, "image", url);
+          closeModal();
+        }
+      });
+
+      // Pemicu Klik Drop Zone
+      dropZone?.addEventListener("click", () => fileInput?.click());
+
+      // Unggah & Kompres Gambar Lokal
+      fileInput?.addEventListener("change", async () => {
+        const file = fileInput.files?.[0];
+        if (file) {
+          closeModal();
+          try {
+            const compressedFile = await compressImage(file, 1000, 0.75);
+            const fileName = `content-${Date.now()}.webp`;
+            const filePath = `content/${fileName}`;
+
+            const { error } = await supabase.storage
+              .from("images")
+              .upload(filePath, compressedFile);
+
+            if (error) throw error;
+
+            const {
+              data: { publicUrl },
+            } = supabase.storage.from("images").getPublicUrl(filePath);
+
+            const range = quillInstance.getSelection();
+            const index = range ? range.index : quillInstance.getLength();
+            quillInstance.insertEmbed(index, "image", publicUrl);
+          } catch (err: any) {
+            alert("Gagal mengunggah gambar: " + err.message);
+          }
+        }
+      });
+    }
+
     async function checkAuth() {
       const {
         data: { session },
@@ -471,36 +603,19 @@ const tagsString = post.tags ? post.tags.join(", ") : "";
         });
 
         if (quill) {
-          const toolbar = quill.getModule("toolbar");
-          toolbar.addHandler("image", () => {
-            const choice = confirm(
-              "Klik 'OK' untuk Menempelkan URL Gambar eksternal.\nKlik 'Cancel' untuk Mengunggah File Baru."
-            );
+          // A. Tangani Event Paste (Tempel dari Clipboard) secara Otomatis
+          quill.root.addEventListener("paste", async (e: ClipboardEvent) => {
+            const clipboardData = e.clipboardData;
+            if (!clipboardData) return;
 
-            if (choice) {
-              const url = prompt(
-                "Masukkan Tautan (URL) Gambar eksternal (misal: Imgur):"
-              );
-              if (url && url.trim() !== "") {
-                const range = quill.getSelection();
-                quill.insertEmbed(range.index, "image", url.trim());
-              }
-            } else {
-              const input = document.createElement("input");
-              input.setAttribute("type", "file");
-              input.setAttribute("accept", "image/*");
-              input.click();
-
-              input.onchange = async () => {
-                const file = input.files?.[0];
+            const items = clipboardData.items;
+            for (let i = 0; i < items.length; i++) {
+              if (items[i].type.indexOf("image") !== -1) {
+                const file = items[i].getAsFile();
                 if (file) {
+                  e.preventDefault(); // Stop Quill memproses Base64 bawaan!
                   try {
-                    // Optimasi: Kompres gambar ke WebP sebelum di-upload ke Storage
-                    const compressedFile = await compressImage(
-                      file,
-                      1000,
-                      0.75
-                    );
+                    const compressedFile = await compressImage(file, 1000, 0.75);
                     const fileName = `content-${Date.now()}.webp`;
                     const filePath = `content/${fileName}`;
 
@@ -513,14 +628,55 @@ const tagsString = post.tags ? post.tags.join(", ") : "";
                     const {
                       data: { publicUrl },
                     } = supabase.storage.from("images").getPublicUrl(filePath);
+
                     const range = quill.getSelection();
-                    quill.insertEmbed(range.index, "image", publicUrl);
+                    const index = range ? range.index : quill.getLength();
+                    quill.insertEmbed(index, "image", publicUrl);
                   } catch (err: any) {
-                    alert("Gagal mengunggah gambar konten: " + err.message);
+                    alert("Gagal mengunggah gambar dari paste: " + err.message);
                   }
                 }
-              };
+              }
             }
+          });
+
+          // B. Tangani Event Drop (Seret & Lepas Berkas) secara Otomatis
+          quill.root.addEventListener("drop", async (e: DragEvent) => {
+            const files = e.dataTransfer?.files;
+            if (files && files.length > 0) {
+              for (let i = 0; i < files.length; i++) {
+                if (files[i].type.indexOf("image") !== -1) {
+                  e.preventDefault(); // Stop browser membuka berkas langsung
+                  try {
+                    const compressedFile = await compressImage(files[i], 1000, 0.75);
+                    const fileName = `content-${Date.now()}.webp`;
+                    const filePath = `content/${fileName}`;
+
+                    const { error } = await supabase.storage
+                      .from("images")
+                      .upload(filePath, compressedFile);
+
+                    if (error) throw error;
+
+                    const {
+                      data: { publicUrl },
+                    } = supabase.storage.from("images").getPublicUrl(filePath);
+
+                    const range = quill.getSelection();
+                    const index = range ? range.index : quill.getLength();
+                    quill.insertEmbed(index, "image", publicUrl);
+                  } catch (err: any) {
+                    alert("Gagal mengunggah gambar dari drag & drop: " + err.message);
+                  }
+                }
+              }
+            }
+          });
+
+          // C. Daftarkan Custom Modal untuk Tombol Gambar di Toolbar
+          const toolbar = quill.getModule("toolbar");
+          toolbar.addHandler("image", () => {
+            showImageInsertModal(quill);
           });
         }
       }
