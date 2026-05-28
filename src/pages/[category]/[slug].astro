@@ -291,14 +291,12 @@ const pageIdentifier = post.id;
                     .from("post_views")
                     .select("views")
                     .eq("post_id", postId)
-                    .single();
+                    .maybeSingle();
 
-                if (!error && data && data.views !== undefined) {
-                    const displayEl =
-                        document.getElementById("view-count-display");
-                    if (displayEl) {
-                        displayEl.innerText = `${data.views} views`;
-                    }
+                const viewsCount = (data && data.views !== undefined) ? data.views : 0;
+                const displayEl = document.getElementById("view-count-display");
+                if (displayEl) {
+                    displayEl.innerText = `${viewsCount} views`;
                 }
             } catch (err) {
                 console.error("Gagal memproses hitungan views:", err);
