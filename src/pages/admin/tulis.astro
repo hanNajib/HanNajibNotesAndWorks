@@ -11,6 +11,42 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
   <script src="https://cdn.jsdelivr.net/npm/quill@2.0.2/dist/quill.js" is:inline
   ></script>
 
+  <!-- Tambahan CSS untuk menyelaraskan Quill Editor dengan Tema Gelap Tailwind -->
+  <style is:global>
+    .ql-toolbar.ql-snow {
+      border-color: rgba(63, 63, 70, 0.4) !important;
+      background-color: transparent !important;
+      border-top-left-radius: 0.75rem;
+      border-top-right-radius: 0.75rem;
+    }
+    .ql-container.ql-snow {
+      border-color: rgba(63, 63, 70, 0.4) !important;
+      border-bottom-left-radius: 0.75rem;
+      border-bottom-right-radius: 0.75rem;
+      font-family: inherit;
+    }
+    .dark .ql-toolbar .ql-stroke {
+      stroke: #e4e4e7 !important;
+    }
+    .dark .ql-toolbar .ql-fill {
+      fill: #e4e4e7 !important;
+    }
+    .dark .ql-toolbar .ql-picker {
+      color: #e4e4e7 !important;
+    }
+    .dark .ql-toolbar .ql-picker-options {
+      background-color: #09090b !important;
+      border-color: #27272a !important;
+    }
+    .dark .ql-editor.ql-blank::before {
+      color: #52525b !important;
+      font-style: normal;
+    }
+    .ql-editor {
+      min-height: 400px;
+    }
+  </style>
+
   <div
     id="editor-content"
     class="opacity-0 transition-opacity duration-300 space-y-8 py-4"
@@ -60,7 +96,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
               class="w-full px-3 py-2 text-xs rounded-lg border border-zinc-200 dark:border-zinc-800 bg-transparent focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-all text-zinc-800 dark:text-zinc-200"
             />
           </div>
-          <div class="md:col-span-1">
+          <div>
             <label
               class="block text-[10px] font-mono uppercase tracking-wider text-zinc-400 mb-1"
               >Slug URL (Otomatis)</label
@@ -138,34 +174,19 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
             >Gambar Cover Artikel</label
           >
           <div class="flex flex-col md:flex-row md:items-start gap-4">
-            <div class="space-y-3 flex-shrink-0">
+            <div class="space-y-3 flex-shrink-0 w-full md:w-64">
               <div class="flex items-center gap-2">
                 <button
                   type="button"
                   id="btn-upload-cover"
                   class="px-3 py-1.5 text-xs font-medium rounded-lg border border-zinc-200 dark:border-zinc-800 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-900 transition-all flex items-center gap-1.5 cursor-pointer"
                 >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke-width="2"
-                    stroke="currentColor"
-                    class="w-3.5 h-3.5"
-                  >
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5m-13.5-9L12 3m0 0 4.5 4.5M12 3v13.5"
-                    ></path>
-                  </svg>
                   Pilih Gambar Cover
                 </button>
                 <button
                   type="button"
                   id="btn-clear-cover"
                   class="hidden px-2.5 py-1.5 text-xs font-medium rounded-lg border border-red-200 dark:border-red-900/50 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 transition-all cursor-pointer"
-                  title="Hapus Gambar"
                 >
                   Hapus
                 </button>
@@ -176,9 +197,16 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
                 accept="image/*"
                 class="hidden"
               />
+
+              <input
+                type="text"
+                id="post-image-url"
+                placeholder="Atau tempel URL Gambar (Imgur, dll)..."
+                class="w-full px-3 py-1.5 text-xs rounded-lg border border-zinc-200 dark:border-zinc-800 bg-transparent focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-all text-zinc-800 dark:text-zinc-200"
+              />
+
               <input type="hidden" id="post-image" name="image" />
             </div>
-
             <div
               id="cover-preview-container"
               class="hidden relative aspect-video w-full max-w-[280px] rounded-xl overflow-hidden border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/50 shadow-inner"
@@ -192,15 +220,17 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
       <div class="flex flex-col space-y-2">
         <label
           class="block text-[10px] font-mono uppercase tracking-wider text-zinc-400"
-          >Konten Publikasi (Mendukung upload gambar lewat toolbar)</label
         >
+          Konten Publikasi (Mendukung upload gambar lewat toolbar)
+        </label>
 
+        <!-- Container luar dilepas h-[480px] nya agar Quill CSS Toolbar & Content menempel rapi -->
         <div
-          class="w-full bg-white dark:bg-zinc-950 rounded-xl border border-zinc-200 dark:border-zinc-800 flex flex-col h-[480px] overflow-hidden shadow-sm"
+          class="w-full bg-white dark:bg-zinc-950 rounded-xl border border-zinc-200 dark:border-zinc-800 flex flex-col shadow-sm overflow-hidden"
         >
           <div
             id="quill-editor"
-            class="text-sm text-zinc-800 dark:text-zinc-200 h-full overflow-y-auto"
+            class="text-sm text-zinc-800 dark:text-zinc-200 bg-transparent"
           >
           </div>
         </div>
@@ -234,6 +264,57 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
   <script>
     import { supabase } from "../../lib/supabase";
 
+    // Fungsi kompresi gambar klien menggunakan Canvas API
+    async function compressImage(
+      file: File,
+      maxWidth = 1200,
+      quality = 0.8
+    ): Promise<File> {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = (event) => {
+          const img = new Image();
+          img.src = event.target?.result as string;
+          img.onload = () => {
+            const canvas = document.createElement("canvas");
+            let width = img.width;
+            let height = img.height;
+
+            if (width > maxWidth) {
+              height = Math.round((height * maxWidth) / width);
+              width = maxWidth;
+            }
+
+            canvas.width = width;
+            canvas.height = height;
+
+            const ctx = canvas.getContext("2d");
+            ctx?.drawImage(img, 0, 0, width, height);
+
+            canvas.toBlob(
+              (blob) => {
+                if (blob) {
+                  const newName = file.name.replace(/\.[^/.]+$/, "") + ".webp";
+                  const compressedFile = new File([blob], newName, {
+                    type: "image/webp",
+                    lastModified: Date.now(),
+                  });
+                  resolve(compressedFile);
+                } else {
+                  reject(new Error("Gagal mengompresi gambar."));
+                }
+              },
+              "image/webp",
+              quality
+            );
+          };
+          img.onerror = (err) => reject(err);
+        };
+        reader.onerror = (err) => reject(err);
+      });
+    }
+
     const editorContent = document.getElementById("editor-content");
     const writeForm = document.getElementById("write-form");
     const titleInput = document.getElementById(
@@ -256,8 +337,12 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
     const postImageInput = document.getElementById(
       "post-image"
     ) as HTMLInputElement;
+    const postImageUrlInput = document.getElementById(
+      "post-image-url"
+    ) as HTMLInputElement;
 
     let quill: any;
+    let selectedCoverFile: File | null = null; // Menyimpan temporary file cover sebelum diunggah saat submit
 
     async function checkAuth() {
       const {
@@ -276,7 +361,6 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
       if (typeof Quill !== "undefined") {
         // @ts-ignore
         const QuillLib = Quill;
-
         const BlockBlot = QuillLib.import("blots/block");
 
         class AlertBlot extends BlockBlot {
@@ -291,7 +375,6 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
           static formats(node) {
             return node.getAttribute("data-alert");
           }
-
           format(name, value) {
             if (name === "alert") {
               if (value) {
@@ -307,7 +390,6 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
 
         AlertBlot.blotName = "alert";
         AlertBlot.tagName = "div";
-
         QuillLib.register(AlertBlot);
 
         quill = new QuillLib("#quill-editor", {
@@ -337,46 +419,120 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
             ],
           },
         });
+
+        if (quill) {
+          const toolbar = quill.getModule("toolbar");
+          toolbar.addHandler("image", () => {
+            const choice = confirm(
+              "Klik 'OK' untuk Menempelkan URL Gambar eksternal.\nKlik 'Cancel' untuk Mengunggah File Baru."
+            );
+
+            if (choice) {
+              const url = prompt(
+                "Masukkan Tautan (URL) Gambar eksternal (misal: Imgur):"
+              );
+              if (url && url.trim() !== "") {
+                const range = quill.getSelection();
+                quill.insertEmbed(range.index, "image", url.trim());
+              }
+            } else {
+              const input = document.createElement("input");
+              input.setAttribute("type", "file");
+              input.setAttribute("accept", "image/*");
+              input.click();
+
+              input.onchange = async () => {
+                const file = input.files?.[0];
+                if (file) {
+                  try {
+                    // Optimasi: Kompres gambar ke WebP sebelum di-upload ke Storage
+                    const compressedFile = await compressImage(
+                      file,
+                      1000,
+                      0.75
+                    );
+                    const fileName = `content-${Date.now()}.webp`;
+                    const filePath = `content/${fileName}`;
+
+                    const { error } = await supabase.storage
+                      .from("images")
+                      .upload(filePath, compressedFile);
+
+                    if (error) throw error;
+
+                    const {
+                      data: { publicUrl },
+                    } = supabase.storage.from("images").getPublicUrl(filePath);
+                    const range = quill.getSelection();
+                    quill.insertEmbed(range.index, "image", publicUrl);
+                  } catch (err: any) {
+                    alert("Gagal mengunggah gambar konten: " + err.message);
+                  }
+                }
+              };
+            }
+          });
+        }
       }
     }
 
-    // Trigger input file saat tombol diklik
+    // Handle Input URL Gambar Eksternal untuk Cover
+    postImageUrlInput?.addEventListener("input", () => {
+      const url = postImageUrlInput.value.trim();
+      if (url) {
+        selectedCoverFile = null; // Batalkan input file lokal jika menggunakan URL teks
+        if (coverFileInput) coverFileInput.value = "";
+
+        if (coverPreview) coverPreview.src = url;
+        if (postImageInput) postImageInput.value = url;
+
+        coverPreviewContainer?.classList.remove("hidden");
+        btnClearCover?.classList.remove("hidden");
+      } else {
+        clearCoverState();
+      }
+    });
+
     btnUploadCover?.addEventListener("click", () => {
       coverFileInput?.click();
     });
 
-    // Handle pembacaan file gambar cover (Base64)
+    // Handle pembacaan file lokal untuk Cover Preview (Aman dari Base64 Database)
     coverFileInput?.addEventListener("change", () => {
       const file = coverFileInput.files?.[0];
       if (file) {
-        const reader = new FileReader();
-        reader.onload = (event) => {
-          const base64String = event.target?.result as string;
+        if (postImageUrlInput) postImageUrlInput.value = ""; // Bersihkan kolom URL teks
+        selectedCoverFile = file;
 
-          if (coverPreview) coverPreview.src = base64String;
-          if (postImageInput) postImageInput.value = base64String;
+        // Gunakan URL.createObjectURL (Lebih hemat memori daripada Base64 FileReader untuk preview lokal)
+        const objectUrl = URL.createObjectURL(file);
+        if (coverPreview) coverPreview.src = objectUrl;
 
-          coverPreviewContainer?.classList.remove("hidden");
-          btnClearCover?.classList.remove("hidden");
-        };
-        reader.readAsDataURL(file);
+        coverPreviewContainer?.classList.remove("hidden");
+        btnClearCover?.classList.remove("hidden");
       }
     });
 
-    // Hapus gambar cover
-    btnClearCover?.addEventListener("click", () => {
+    function clearCoverState() {
+      selectedCoverFile = null;
       if (coverFileInput) coverFileInput.value = "";
+      if (postImageUrlInput) postImageUrlInput.value = "";
       if (postImageInput) postImageInput.value = "";
-      if (coverPreview) coverPreview.src = "";
+      if (coverPreview) {
+        if (coverPreview.src.startsWith("blob:")) {
+          URL.revokeObjectURL(coverPreview.src); // Hapus alokasi objek memori blob
+        }
+        coverPreview.src = "";
+      }
+      coverPreviewContainer?.className = "hidden";
+      btnClearCover?.className = "hidden";
+    }
 
-      coverPreviewContainer?.classList.add("hidden");
-      btnClearCover?.classList.add("hidden");
-    });
+    btnClearCover?.addEventListener("click", clearCoverState);
 
-    // 3. Auto Generate Slug dari Judul
+    // Auto-generate slug fungsional
     titleInput?.addEventListener("input", () => {
-      const value = titleInput.value;
-      const slug = value
+      const slug = titleInput.value
         .toLowerCase()
         .replace(/[^a-z0-9\s-]/g, "")
         .replace(/\s+/g, "-")
@@ -385,7 +541,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
       if (slugInput) slugInput.value = slug;
     });
 
-    // 4. Form Submit Handler (Tembak ke database Supabase)
+    // Form Submit Handler Teroptimasi
     writeForm?.addEventListener("submit", async (e) => {
       e.preventDefault();
 
@@ -406,52 +562,75 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
         </svg>
         Menerbitkan...`;
 
-      const title = titleInput.value;
-      const slug = slugInput.value;
-      const category = (
-        document.getElementById("post-category") as HTMLSelectElement
-      ).value;
-      const read_time = (
-        document.getElementById("post-readtime") as HTMLInputElement
-      ).value;
-      const rawTags = (document.getElementById("post-tags") as HTMLInputElement)
-        .value;
-      const image = (document.getElementById("post-image") as HTMLInputElement)
-        .value;
-      const status = (
-        document.getElementById("post-status") as HTMLSelectElement
-      ).value;
+      try {
+        let finalImageUrl = postImageUrlInput.value.trim();
 
-      const content = quill ? quill.root.innerHTML : "";
+        // JIKA ADA FILE LOKAL: Lakukan proses kompresi & unggah ke Supabase Storage terlebih dahulu
+        if (selectedCoverFile) {
+          const compressedCover = await compressImage(
+            selectedCoverFile,
+            1200,
+            0.8
+          );
+          const fileName = `cover-${Date.now()}.webp`;
+          const filePath = `covers/${fileName}`;
 
-      const tags = rawTags
-        .split(",")
-        .map((tag) => tag.trim())
-        .filter((tag) => tag !== "");
+          const { error: uploadError } = await supabase.storage
+            .from("images")
+            .upload(filePath, compressedCover);
 
-      // Eksekusi INSERT ke Supabase
-      const { error } = await supabase.from("posts").insert([
-        {
-          title,
-          slug,
-          category,
-          read_time,
-          tags,
-          image: image || "",
-          status,
-          content,
-        },
-      ]);
+          if (uploadError) throw uploadError;
 
-      if (error) {
+          const {
+            data: { publicUrl },
+          } = supabase.storage.from("images").getPublicUrl(filePath);
+          finalImageUrl = publicUrl;
+        }
+
+        const title = titleInput.value;
+        const slug = slugInput.value;
+        const category = (
+          document.getElementById("post-category") as HTMLSelectElement
+        ).value;
+        const read_time = (
+          document.getElementById("post-readtime") as HTMLInputElement
+        ).value;
+        const rawTags = (
+          document.getElementById("post-tags") as HTMLInputElement
+        ).value;
+        const status = (
+          document.getElementById("post-status") as HTMLSelectElement
+        ).value;
+        const content = quill ? quill.root.innerHTML : "";
+
+        const tags = rawTags
+          .split(",")
+          .map((tag) => tag.trim())
+          .filter((tag) => tag !== "");
+
+        const { error: dbError } = await supabase.from("posts").insert([
+          {
+            title,
+            slug,
+            category,
+            read_time: parseInt(read_time) || 0,
+            tags,
+            image: finalImageUrl, // Menyimpan URL String bersih, aman dari beban Base64!
+            status,
+            content,
+          },
+        ]);
+
+        if (dbError) throw dbError;
+
+        window.location.href = "/admin";
+      } catch (error: any) {
         if (errorMsg) {
           errorMsg.innerText = "Gagal menerbitkan: " + error.message;
           errorMsg.classList.remove("hidden");
         }
         btnSubmit.disabled = false;
         btnSubmit.innerHTML = originalText;
-      } else {
-        window.location.href = "/admin";
       }
     });
 
