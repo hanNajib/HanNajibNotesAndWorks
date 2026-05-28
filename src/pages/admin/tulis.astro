@@ -446,7 +446,48 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
       // Pemicu Klik Drop Zone
       dropZone?.addEventListener("click", () => fileInput?.click());
 
-      // Unggah & Kompres Gambar Lokal
+      // Drag & Drop event listeners untuk drop-zone di dalam modal
+      dropZone?.addEventListener("dragover", (e: any) => {
+        e.preventDefault();
+        dropZone.classList.add("border-zinc-900", "dark:border-zinc-50", "bg-zinc-50/50", "dark:bg-zinc-900/30");
+      });
+
+      dropZone?.addEventListener("dragleave", () => {
+        dropZone.classList.remove("border-zinc-900", "dark:border-zinc-50", "bg-zinc-50/50", "dark:bg-zinc-900/30");
+      });
+
+      dropZone?.addEventListener("drop", async (e: any) => {
+        e.preventDefault();
+        dropZone.classList.remove("border-zinc-900", "dark:border-zinc-50", "bg-zinc-50/50", "dark:bg-zinc-900/30");
+        
+        const file = e.dataTransfer?.files?.[0];
+        if (file && file.type.indexOf("image") !== -1) {
+          closeModal();
+          try {
+            const compressedFile = await compressImage(file, 1000, 0.75);
+            const fileName = `content-${Date.now()}.webp`;
+            const filePath = `content/${fileName}`;
+
+            const { error } = await supabase.storage
+              .from("images")
+              .upload(filePath, compressedFile);
+
+            if (error) throw error;
+
+            const {
+              data: { publicUrl },
+            } = supabase.storage.from("images").getPublicUrl(filePath);
+
+            const range = quillInstance.getSelection();
+            const index = range ? range.index : quillInstance.getLength();
+            quillInstance.insertEmbed(index, "image", publicUrl);
+          } catch (err: any) {
+            alert("Gagal mengunggah gambar: " + err.message);
+          }
+        }
+      });
+
+      // Unggah & Kompres Gambar Lokal via Klik
       fileInput?.addEventListener("change", async () => {
         const file = fileInput.files?.[0];
         if (file) {
