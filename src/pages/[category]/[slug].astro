@@ -178,6 +178,8 @@ const pageIdentifier = post.id;
                             </>
                         )
                     }
+                    <span>•</span>
+                    <span>{post.views || 0} views</span>
                 </div>
 
                 <h1
@@ -250,4 +252,20 @@ const pageIdentifier = post.id;
             <noscript> Please enable JavaScript to load comments.</noscript>
         </section>
     </div>
+
+    <script define:vars={{ slug: post.slug }}>
+        import { supabase } from "../../lib/supabase";
+        async function trackView() {
+            const sessionKey = `viewed_${slug}`;
+            if (!sessionStorage.getItem(sessionKey)) {
+                const { error } = await supabase.rpc("increment_views", {
+                    post_slug: slug,
+                });
+                if (!error) {
+                    sessionStorage.setItem(sessionKey, "true");
+                }
+            }
+        }
+        trackView();
+    </script>
 </Layout>
