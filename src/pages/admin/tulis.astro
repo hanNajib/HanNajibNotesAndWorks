@@ -600,69 +600,94 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
             if (!clipboardData) return;
 
             const items = clipboardData.items;
+            let hasImage = false;
             for (let i = 0; i < items.length; i++) {
               if (items[i].type.indexOf("image") !== -1) {
-                const file = items[i].getAsFile();
-                if (file) {
-                  e.preventDefault(); // Stop Quill memproses Base64 bawaan!
-                  try {
-                    const compressedFile = await compressImage(file, 1000, 0.75);
-                    const fileName = `content-${Date.now()}.webp`;
-                    const filePath = `content/${fileName}`;
+                hasImage = true;
+                break;
+              }
+            }
 
-                    const { error } = await supabase.storage
-                      .from("images")
-                      .upload(filePath, compressedFile);
+            if (hasImage) {
+              e.preventDefault();
+              e.stopPropagation(); // Hentikan event agar tidak masuk ke handler bawaan Quill!
 
-                    if (error) throw error;
+              // Cari dan ambil file gambar
+              for (let i = 0; i < items.length; i++) {
+                if (items[i].type.indexOf("image") !== -1) {
+                  const file = items[i].getAsFile();
+                  if (file) {
+                    try {
+                      const compressedFile = await compressImage(file, 1000, 0.75);
+                      const fileName = `content-${Date.now()}.webp`;
+                      const filePath = `content/${fileName}`;
 
-                    const {
-                      data: { publicUrl },
-                    } = supabase.storage.from("images").getPublicUrl(filePath);
+                      const { error } = await supabase.storage
+                        .from("images")
+                        .upload(filePath, compressedFile);
 
-                    const range = quill.getSelection();
-                    const index = range ? range.index : quill.getLength();
-                    quill.insertEmbed(index, "image", publicUrl);
-                  } catch (err: any) {
-                    alert("Gagal mengunggah gambar dari paste: " + err.message);
+                      if (error) throw error;
+
+                      const {
+                        data: { publicUrl },
+                      } = supabase.storage.from("images").getPublicUrl(filePath);
+
+                      const range = quill.getSelection();
+                      const index = range ? range.index : quill.getLength();
+                      quill.insertEmbed(index, "image", publicUrl);
+                    } catch (err: any) {
+                      alert("Gagal mengunggah gambar dari paste: " + err.message);
+                    }
                   }
                 }
               }
             }
-          });
+          }, true); // Gunakan capture phase agar dipanggil sebelum handler internal Quill!
 
           // B. Tangani Event Drop (Seret & Lepas Berkas) secara Otomatis
           quill.root.addEventListener("drop", async (e: DragEvent) => {
             const files = e.dataTransfer?.files;
             if (files && files.length > 0) {
+              let hasImage = false;
               for (let i = 0; i < files.length; i++) {
                 if (files[i].type.indexOf("image") !== -1) {
-                  e.preventDefault(); // Stop browser membuka berkas langsung
-                  try {
-                    const compressedFile = await compressImage(files[i], 1000, 0.75);
-                    const fileName = `content-${Date.now()}.webp`;
-                    const filePath = `content/${fileName}`;
+                  hasImage = true;
+                  break;
+                }
+              }
 
-                    const { error } = await supabase.storage
-                      .from("images")
-                      .upload(filePath, compressedFile);
+              if (hasImage) {
+                e.preventDefault();
+                e.stopPropagation(); // Hentikan default browser & handler internal Quill!
 
-                    if (error) throw error;
+                for (let i = 0; i < files.length; i++) {
+                  if (files[i].type.indexOf("image") !== -1) {
+                    try {
+                      const compressedFile = await compressImage(files[i], 1000, 0.75);
+                      const fileName = `content-${Date.now()}.webp`;
+                      const filePath = `content/${fileName}`;
 
-                    const {
-                      data: { publicUrl },
-                    } = supabase.storage.from("images").getPublicUrl(filePath);
+                      const { error } = await supabase.storage
+                        .from("images")
+                        .upload(filePath, compressedFile);
 
-                    const range = quill.getSelection();
-                    const index = range ? range.index : quill.getLength();
-                    quill.insertEmbed(index, "image", publicUrl);
-                  } catch (err: any) {
-                    alert("Gagal mengunggah gambar dari drag & drop: " + err.message);
+                      if (error) throw error;
+
+                      const {
+                        data: { publicUrl },
+                      } = supabase.storage.from("images").getPublicUrl(filePath);
+
+                      const range = quill.getSelection();
+                      const index = range ? range.index : quill.getLength();
+                      quill.insertEmbed(index, "image", publicUrl);
+                    } catch (err: any) {
+                      alert("Gagal mengunggah gambar dari drag & drop: " + err.message);
+                    }
                   }
                 }
               }
             }
-          });
+          }, true); // Gunakan capture phase agar dipanggil sebelum handler internal Quill!
 
           // C. Daftarkan Custom Modal untuk Tombol Gambar di Toolbar
           const toolbar = quill.getModule("toolbar");
