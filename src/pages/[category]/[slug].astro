@@ -290,7 +290,7 @@ const pageIdentifier = post.id;
                 const { data, error } = await supabase
                     .from("post_views")
                     .select("views")
-                    .eq("post_id", parseInt(postId))
+                    .eq("post_id", postId)
                     .single();
 
                 if (!error && data && data.views !== undefined) {
