@@ -524,8 +524,9 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
         }
         coverPreview.src = "";
       }
-      coverPreviewContainer?.className = "hidden";
-      btnClearCover?.className = "hidden";
+      // UBAH DUA BARIS DI BAWAH INI:
+      coverPreviewContainer?.classList.add("hidden");
+      btnClearCover?.classList.add("hidden");
     }
 
     btnClearCover?.addEventListener("click", clearCoverState);
