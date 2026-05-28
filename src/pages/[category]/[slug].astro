@@ -178,8 +178,8 @@ const pageIdentifier = post.id;
                             </>
                         )
                     }
-                    <span>•</span>
-                    <span>{post.views || 0} views</span>
+                    <span>/</span>
+                    <span id="view-count-display">{post.views || 0} views</span>
                 </div>
 
                 <h1
@@ -253,19 +253,59 @@ const pageIdentifier = post.id;
         </section>
     </div>
 
-    <script define:vars={{ slug: post.slug }}>
+    <!-- Element pembawa metadata untuk script client-side -->
+    <div
+        id="view-tracker"
+        data-slug={post.slug}
+        data-id={post.id}
+        class="hidden"
+    >
+    </div>
+
+    <script>
         import { supabase } from "../../lib/supabase";
-        async function trackView() {
+
+        async function trackAndFetchViews() {
+            const tracker = document.getElementById("view-tracker");
+            if (!tracker) return;
+
+            const slug = tracker.dataset.slug;
+            const postId = tracker.dataset.id;
+            if (!slug || !postId) return;
+
             const sessionKey = `viewed_${slug}`;
-            if (!sessionStorage.getItem(sessionKey)) {
-                const { error } = await supabase.rpc("increment_views", {
-                    post_slug: slug,
-                });
-                if (!error) {
-                    sessionStorage.setItem(sessionKey, "true");
+
+            try {
+                // 1. Jalankan increment RPC jika sesi ini belum melihat artikel
+                if (!sessionStorage.getItem(sessionKey)) {
+                    const { error } = await supabase.rpc("increment_views", {
+                        post_slug: slug,
+                    });
+                    if (!error) {
+                        sessionStorage.setItem(sessionKey, "true");
+                    }
                 }
+
+                // 2. Tarik jumlah views terupdate dari Supabase secara real-time (tabel post_views)
+                const { data, error } = await supabase
+                    .from("post_views")
+                    .select("views")
+                    .eq("post_id", parseInt(postId))
+                    .single();
+
+                if (!error && data && data.views !== undefined) {
+                    const displayEl =
+                        document.getElementById("view-count-display");
+                    if (displayEl) {
+                        displayEl.innerText = `${data.views} views`;
+                    }
+                }
+            } catch (err) {
+                console.error("Gagal memproses hitungan views:", err);
             }
         }
-        trackView();
+
+        // Jalankan pelacakan saat halaman dimuat di sisi klien
+        trackAndFetchViews();
     </script>
 </Layout>

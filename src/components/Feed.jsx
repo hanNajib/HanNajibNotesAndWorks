@@ -1,4 +1,5 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
+import { supabase } from '../lib/supabase'
 
 const formatDate = (dateString) => {
     if (!dateString) return "";
@@ -19,6 +20,29 @@ const stripHtml = (html) => {
 export default function Feed({ posts }) {
     const [currentFilter, setCurrentFilter] = useState('all')
     const [searchQuery, setSearchQuery] = useState('')
+    const [liveViews, setLiveViews] = useState({})
+
+    useEffect(() => {
+        async function fetchLatestViews() {
+            try {
+                const { data, error } = await supabase
+                    .from('post_views')
+                    .select('post_id, views');
+                
+                if (!error && data) {
+                    const viewsMap = data.reduce((acc, curr) => {
+                        acc[curr.post_id] = curr.views;
+                        return acc;
+                    }, {});
+                    setLiveViews(viewsMap);
+                }
+            } catch (err) {
+                console.error("Gagal memuat live views:", err);
+            }
+        }
+        fetchLatestViews();
+    }, []);
+
     const filteredPosts = posts.filter(post => {
         const matchCategory = currentFilter === 'all' || post.category === currentFilter;
 
@@ -62,12 +86,14 @@ export default function Feed({ posts }) {
                         return (
                             <article key={post.id} className="group border-b border-zinc-100 dark:border-zinc-900 pb-10 transition-all hover:border-zinc-300 dark:hover:border-zinc-700" >
                                 <a href={targetUrl} className="block">
-                                    <div className="flex items-center space-x-2 text-xs text-zinc-400 dark:text-zinc-500 font-mono mb-2 uppercase tracking-wider">
+                                    <div className="flex items-center space-x-2 text-xs text-zinc-400 dark:text-zinc-500 font-mono mb-2 uppercase tracking-wider flex-wrap">
                                         <span className="font-bold text-zinc-650 dark:text-zinc-300">{post.category}</span>
                                         <span>&bull;</span>
                                         <span>{formatDate(post.created_at)}</span>
                                         <span>&bull;</span>
                                         <span>{post.read_time} min read</span>
+                                        <span>&bull;</span>
+                                        <span>{liveViews[post.id] !== undefined ? liveViews[post.id] : (post.views || 0)} views</span>
                                     </div>
                                     <h3 className="text-xl font-bold text-zinc-900 dark:text-zinc-50 group-hover:text-zinc-600 dark:group-hover:text-zinc-300 transition-colors tracking-tight mb-2">
                                         {post.title}
