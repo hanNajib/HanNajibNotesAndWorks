@@ -348,11 +348,13 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
     ) as HTMLInputElement;
 
     let quill: any;
-    let selectedCoverFile: File | null = null; // Menyimpan temporary file cover sebelum diunggah saat submit
+    let selectedCoverFile: File | null = null; 
 
-    // Fungsi untuk menampilkan Custom Modal Sisip Gambar (Premium Tailwind UI)
     function showImageInsertModal(quillInstance: any) {
       if (document.getElementById("quill-image-modal")) return;
+
+      const currentRange = quillInstance.getSelection();
+      const insertIndex = currentRange ? currentRange.index : quillInstance.getLength();
 
       // Buat overlay modal
       const overlay = document.createElement("div");
@@ -442,9 +444,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
       submitUrl?.addEventListener("click", () => {
         const url = urlInput.value.trim();
         if (url) {
-          const range = quillInstance.getSelection();
-          const index = range ? range.index : quillInstance.getLength();
-          quillInstance.insertEmbed(index, "image", url);
+          quillInstance.insertEmbed(insertIndex, "image", url);
           closeModal();
         }
       });
@@ -484,9 +484,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
               data: { publicUrl },
             } = supabase.storage.from("images").getPublicUrl(filePath);
 
-            const range = quillInstance.getSelection();
-            const index = range ? range.index : quillInstance.getLength();
-            quillInstance.insertEmbed(index, "image", publicUrl);
+            quillInstance.insertEmbed(insertIndex, "image", publicUrl);
           } catch (err: any) {
             alert("Gagal mengunggah gambar: " + err.message);
           }
@@ -513,9 +511,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
               data: { publicUrl },
             } = supabase.storage.from("images").getPublicUrl(filePath);
 
-            const range = quillInstance.getSelection();
-            const index = range ? range.index : quillInstance.getLength();
-            quillInstance.insertEmbed(index, "image", publicUrl);
+            quillInstance.insertEmbed(insertIndex, "image", publicUrl);
           } catch (err: any) {
             alert("Gagal mengunggah gambar: " + err.message);
           }
@@ -604,6 +600,10 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
         if (quill) {
           // A. Tangani Event Paste (Tempel dari Clipboard) secara Otomatis
           quill.root.addEventListener("paste", async (e: ClipboardEvent) => {
+            // 🔥 AMBIL KURSOR SEBELUM PROSES ASYNC DIMULAI 🔥
+            const range = quill.getSelection();
+            const insertIndex = range ? range.index : quill.getLength();
+
             const clipboardData = e.clipboardData;
             if (!clipboardData) return;
 
@@ -640,9 +640,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
                         data: { publicUrl },
                       } = supabase.storage.from("images").getPublicUrl(filePath);
 
-                      const range = quill.getSelection();
-                      const index = range ? range.index : quill.getLength();
-                      quill.insertEmbed(index, "image", publicUrl);
+                      quill.insertEmbed(insertIndex, "image", publicUrl);
                     } catch (err: any) {
                       alert("Gagal mengunggah gambar dari paste: " + err.message);
                     }
@@ -654,6 +652,10 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
 
           // B. Tangani Event Drop (Seret & Lepas Berkas) secara Otomatis
           quill.root.addEventListener("drop", async (e: DragEvent) => {
+            // 🔥 AMBIL KURSOR SEBELUM PROSES ASYNC DIMULAI 🔥
+            const range = quill.getSelection();
+            const insertIndex = range ? range.index : quill.getLength();
+
             const files = e.dataTransfer?.files;
             if (files && files.length > 0) {
               let hasImage = false;
@@ -685,9 +687,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
                         data: { publicUrl },
                       } = supabase.storage.from("images").getPublicUrl(filePath);
 
-                      const range = quill.getSelection();
-                      const index = range ? range.index : quill.getLength();
-                      quill.insertEmbed(index, "image", publicUrl);
+                      quill.insertEmbed(insertIndex, "image", publicUrl);
                     } catch (err: any) {
                       alert("Gagal mengunggah gambar dari drag & drop: " + err.message);
                     }

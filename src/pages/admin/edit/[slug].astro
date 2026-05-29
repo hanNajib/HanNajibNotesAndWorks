@@ -404,6 +404,10 @@ const tagsString = post.tags ? post.tags.join(", ") : "";
     function showImageInsertModal(quillInstance: any) {
       if (document.getElementById("quill-image-modal")) return;
 
+      // 🔥 AMBIL KURSOR SAAT INI SEBELUM FOKUS BROWSER PINDAH KE MODAL 🔥
+      const currentRange = quillInstance.getSelection();
+      const insertIndex = currentRange ? currentRange.index : quillInstance.getLength();
+
       // Buat overlay modal
       const overlay = document.createElement("div");
       overlay.id = "quill-image-modal";
@@ -492,9 +496,7 @@ const tagsString = post.tags ? post.tags.join(", ") : "";
       submitUrl?.addEventListener("click", () => {
         const url = urlInput.value.trim();
         if (url) {
-          const range = quillInstance.getSelection();
-          const index = range ? range.index : quillInstance.getLength();
-          quillInstance.insertEmbed(index, "image", url);
+          quillInstance.insertEmbed(insertIndex, "image", url);
           closeModal();
         }
       });
@@ -534,9 +536,7 @@ const tagsString = post.tags ? post.tags.join(", ") : "";
               data: { publicUrl },
             } = supabase.storage.from("images").getPublicUrl(filePath);
 
-            const range = quillInstance.getSelection();
-            const index = range ? range.index : quillInstance.getLength();
-            quillInstance.insertEmbed(index, "image", publicUrl);
+            quillInstance.insertEmbed(insertIndex, "image", publicUrl);
           } catch (err: any) {
             alert("Gagal mengunggah gambar: " + err.message);
           }
@@ -563,9 +563,7 @@ const tagsString = post.tags ? post.tags.join(", ") : "";
               data: { publicUrl },
             } = supabase.storage.from("images").getPublicUrl(filePath);
 
-            const range = quillInstance.getSelection();
-            const index = range ? range.index : quillInstance.getLength();
-            quillInstance.insertEmbed(index, "image", publicUrl);
+            quillInstance.insertEmbed(insertIndex, "image", publicUrl);
           } catch (err: any) {
             alert("Gagal mengunggah gambar: " + err.message);
           }
@@ -653,6 +651,10 @@ const tagsString = post.tags ? post.tags.join(", ") : "";
         if (quill) {
           // A. Tangani Event Paste (Tempel dari Clipboard) secara Otomatis
           quill.root.addEventListener("paste", async (e: ClipboardEvent) => {
+            // 🔥 AMBIL KURSOR SEBELUM PROSES ASYNC DIMULAI 🔥
+            const range = quill.getSelection();
+            const insertIndex = range ? range.index : quill.getLength();
+
             const clipboardData = e.clipboardData;
             if (!clipboardData) return;
 
@@ -689,9 +691,7 @@ const tagsString = post.tags ? post.tags.join(", ") : "";
                         data: { publicUrl },
                       } = supabase.storage.from("images").getPublicUrl(filePath);
 
-                      const range = quill.getSelection();
-                      const index = range ? range.index : quill.getLength();
-                      quill.insertEmbed(index, "image", publicUrl);
+                      quill.insertEmbed(insertIndex, "image", publicUrl);
                     } catch (err: any) {
                       alert("Gagal mengunggah gambar dari paste: " + err.message);
                     }
@@ -703,6 +703,10 @@ const tagsString = post.tags ? post.tags.join(", ") : "";
 
           // B. Tangani Event Drop (Seret & Lepas Berkas) secara Otomatis
           quill.root.addEventListener("drop", async (e: DragEvent) => {
+            // 🔥 AMBIL KURSOR SEBELUM PROSES ASYNC DIMULAI 🔥
+            const range = quill.getSelection();
+            const insertIndex = range ? range.index : quill.getLength();
+
             const files = e.dataTransfer?.files;
             if (files && files.length > 0) {
               let hasImage = false;
@@ -734,9 +738,7 @@ const tagsString = post.tags ? post.tags.join(", ") : "";
                         data: { publicUrl },
                       } = supabase.storage.from("images").getPublicUrl(filePath);
 
-                      const range = quill.getSelection();
-                      const index = range ? range.index : quill.getLength();
-                      quill.insertEmbed(index, "image", publicUrl);
+                      quill.insertEmbed(insertIndex, "image", publicUrl);
                     } catch (err: any) {
                       alert("Gagal mengunggah gambar dari drag & drop: " + err.message);
                     }
