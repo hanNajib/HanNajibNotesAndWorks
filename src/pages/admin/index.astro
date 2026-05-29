@@ -137,7 +137,11 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
     function renderFilteredPosts() {
       if (postsList) postsList.innerHTML = "";
 
-      const filtered = allPosts.filter(post => activeFilter === "all" || post.category === activeFilter);
+      const filtered = allPosts.filter(post => 
+        activeFilter === "all" 
+          ? post.category !== "snap" 
+          : post.category === activeFilter
+      );
 
       if (filtered.length === 0) {
         emptyEl?.classList.remove("hidden");

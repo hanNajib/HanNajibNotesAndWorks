@@ -14,10 +14,16 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
   <!-- Tambahan CSS untuk menyelaraskan Quill Editor dengan Tema Gelap Tailwind -->
   <style is:global>
     .ql-toolbar.ql-snow {
+      position: sticky;
+      top: 0;
+      z-index: 50;
       border-color: rgba(63, 63, 70, 0.4) !important;
-      background-color: transparent !important;
+      background-color: #ffffff !important;
       border-top-left-radius: 0.75rem;
       border-top-right-radius: 0.75rem;
+    }
+    .dark .ql-toolbar.ql-snow {
+      background-color: #09090b !important;
     }
     .ql-container.ql-snow {
       border-color: rgba(63, 63, 70, 0.4) !important;
@@ -226,7 +232,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
 
         <!-- Container luar dilepas h-[480px] nya agar Quill CSS Toolbar & Content menempel rapi -->
         <div
-          class="w-full bg-white dark:bg-zinc-950 rounded-xl border border-zinc-200 dark:border-zinc-800 flex flex-col shadow-sm overflow-hidden"
+          class="w-full bg-white dark:bg-zinc-950 rounded-xl border border-zinc-200 dark:border-zinc-800 flex flex-col shadow-sm"
         >
           <div
             id="quill-editor"
@@ -571,11 +577,13 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
             "Tuliskan pemikiran mendalam, tutorial, catatan harian, atau deskripsi snaps di sini...",
           modules: {
             toolbar: [
-              [{ header: [1, 2, 3, false] }],
+              // UBAH: Hapus Header 1 karena H1 adalah Hak Prerogatif Judul Artikel
+              [{ header: [2, 3, 4, false] }],
               ["bold", "italic", "underline", "strike"],
               ["blockquote", "code-block"],
               [{ list: "ordered" }, { list: "bullet" }],
-              ["link", "image"],
+              [{ align: [] }], // UBAH: Perataan teks sangat penting untuk blog 
+              ["link", "image", "video"], // UBAH: Tambahan Embed Video
               [
                 {
                   alert: [

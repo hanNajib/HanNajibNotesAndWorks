@@ -40,10 +40,16 @@ const tagsString = post.tags ? post.tags.join(", ") : "";
 
   <style is:global>
     .ql-toolbar.ql-snow {
+      position: sticky;
+      top: 0;
+      z-index: 50;
       border-color: rgba(63, 63, 70, 0.4) !important;
-      background-color: transparent !important;
+      background-color: #ffffff !important;
       border-top-left-radius: 0.75rem;
       border-top-right-radius: 0.75rem;
+    }
+    .dark .ql-toolbar.ql-snow {
+      background-color: #09090b !important;
     }
     .ql-container.ql-snow {
       border-color: rgba(63, 63, 70, 0.4) !important;
@@ -274,7 +280,7 @@ const tagsString = post.tags ? post.tags.join(", ") : "";
         </label>
 
         <div
-          class="w-full bg-white dark:bg-zinc-950 rounded-xl border border-zinc-200 dark:border-zinc-800 flex flex-col shadow-sm overflow-hidden"
+          class="w-full bg-white dark:bg-zinc-950 rounded-xl border border-zinc-200 dark:border-zinc-800 flex flex-col shadow-sm"
         >
           <div
             id="quill-editor"
@@ -621,11 +627,12 @@ const tagsString = post.tags ? post.tags.join(", ") : "";
           placeholder: "Tuliskan tulisan Anda...",
           modules: {
             toolbar: [
-              [{ header: [1, 2, 3, false] }],
+              [{ header: [2, 3, 4, false] }],
               ["bold", "italic", "underline", "strike"],
               ["blockquote", "code-block"],
               [{ list: "ordered" }, { list: "bullet" }],
-              ["link", "image"],
+              [{ align: [] }],
+              ["link", "image", "video"],
               [
                 {
                   alert: [

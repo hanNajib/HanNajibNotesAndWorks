@@ -30,7 +30,7 @@ export async function getStaticPaths() {
 
     if (error || !posts || posts.length === 0) {
         throw new Error(
-            "Proses Build Gagal: Tidak dapat mengambil data posts dari Supabase."
+            "Proses Build Gagal: Tidak dapat mengambil data posts dari Supabase.",
         );
     }
 
@@ -40,10 +40,10 @@ export async function getStaticPaths() {
                 post.category === "note"
                     ? "notes"
                     : post.category === "work"
-                    ? "works"
-                    : post.category === "til"
-                    ? "til"
-                    : "snaps";
+                      ? "works"
+                      : post.category === "til"
+                        ? "til"
+                        : "snaps";
 
             return {
                 params: {
@@ -132,14 +132,13 @@ const pageIdentifier = post.id;
         type="application/ld+json"
         slot="head"
         set:html={JSON.stringify(jsonLd)}
-    ></script>
+    />
 
-    <div class="max-w-2xl mx-auto py-6">
-        <!-- Tombol Kembali ke Beranda -->
-        <div class="mb-6">
+    <div class="max-w-4xl mx-auto py-6 md:py-10">
+        <div class="mb-8">
             <a
                 href="/"
-                class="inline-flex items-center gap-1.5 text-xs text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200 transition-colors font-mono"
+                class="inline-flex items-center gap-1.5 text-xs md:text-sm text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200 transition-colors font-mono"
             >
                 &larr; Kembali ke Beranda
             </a>
@@ -147,11 +146,11 @@ const pageIdentifier = post.id;
 
         {
             post.category === "snap" && post.image && (
-                <div class="mb-8 overflow-hidden rounded-2xl border border-zinc-200/70 dark:border-zinc-800">
+                <div class="mb-10 overflow-hidden rounded-2xl md:rounded-3xl border border-zinc-200/70 dark:border-zinc-800">
                     <img
                         src={post.image}
                         alt={post.title}
-                        class="w-full max-h-[500px] object-cover"
+                        class="w-full h-auto"
                         loading="eager"
                         decoding="async"
                     />
@@ -160,19 +159,19 @@ const pageIdentifier = post.id;
         }
 
         <article>
-            <header class="mb-8">
+            <header class="mb-10 md:mb-14">
                 <div
-                    class="flex items-center gap-2 text-xs font-mono text-zinc-400 mb-3"
+                    class="flex items-center gap-2 md:gap-3 text-xs md:text-sm font-mono text-zinc-400 mb-4"
                 >
                     <span class="lowercase">
                         {
                             post.category === "note"
                                 ? "notes"
                                 : post.category === "work"
-                                ? "works"
-                                : post.category === "til"
-                                ? "til"
-                                : "snaps"
+                                  ? "works"
+                                  : post.category === "til"
+                                    ? "til"
+                                    : "snaps"
                         }
                     </span>
 
@@ -193,7 +192,8 @@ const pageIdentifier = post.id;
                 </div>
 
                 <h1
-                    class="text-3xl sm:text-4xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100 leading-tight"
+                    class="text-[32px] sm:text-4xl md:text-[40px] font-extrabold tracking-tight text-zinc-900 dark:text-zinc-50 leading-[1.2] md:leading-[1.15]"
+                    style="text-wrap: balance;"
                 >
                     {post.title}
                 </h1>
@@ -201,28 +201,39 @@ const pageIdentifier = post.id;
 
             {
                 post.category !== "snap" && post.image && (
-                    <div class="mb-8 overflow-hidden rounded-2xl border border-zinc-200/70 dark:border-zinc-800">
+                    <div class="mb-12 md:mb-16 overflow-hidden rounded-2xl md:rounded-3xl border border-zinc-200/70 dark:border-zinc-800 shadow-sm">
                         <img
                             src={post.image}
                             alt={post.title}
-                            class="w-full max-h-[450px] object-cover"
+                            class="w-full max-h-[450px] md:max-h-[600px] object-cover"
                         />
                     </div>
                 )
             }
 
             <div
-                class="prose prose-zinc dark:prose-invert max-w-none leading-7 prose-p:my-3 prose-ul:list-disc prose-ul:pl-6 prose-ol:list-decimal prose-ol:pl-6 prose-li:my-1 prose-li:marker:text-zinc-500 prose-headings:font-bold prose-headings:tracking-tight prose-headings:scroll-mt-24 prose-h1:text-4xl prose-h1:mb-4 prose-h2:text-2xl prose-h2:mt-10 prose-h2:mb-3 prose-h3:text-xl prose-h3:mt-8 prose-h3:mb-2 prose-img:rounded-2xl prose-img:my-6 prose-pre:rounded-2xl prose-pre:px-4 prose-pre:py-4 prose-code:text-[0.9em] prose-code:before:content-none prose-code:after:content-none prose-a:no-underline hover:prose-a:underline"
+                class="prose prose-zinc dark:prose-invert max-w-none md:prose-lg leading-loose
+                prose-p:my-5 md:prose-p:my-6
+                prose-ul:list-disc prose-ul:pl-6 prose-ol:list-decimal prose-ol:pl-6
+                prose-li:my-2 prose-li:marker:text-zinc-500
+                prose-headings:font-bold prose-headings:tracking-tight prose-headings:scroll-mt-28
+                prose-h2:text-2xl md:prose-h2:text-3xl prose-h2:mt-12 prose-h2:mb-5
+                prose-h3:text-xl md:prose-h3:text-2xl prose-h3:mt-8 prose-h3:mb-3
+                prose-img:rounded-2xl md:prose-img:rounded-3xl prose-img:my-8 prose-img:shadow-md
+                prose-pre:rounded-2xl md:prose-pre:rounded-3xl prose-pre:px-6 prose-pre:py-5 prose-pre:shadow-sm
+                prose-code:text-[0.9em] prose-code:before:content-none prose-code:after:content-none
+                prose-code:bg-zinc-100 dark:prose-code:bg-zinc-800 prose-code:text-pink-600 dark:prose-code:text-pink-400 prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded-md prose-code:font-medium
+                prose-blockquote:border-l-4 prose-blockquote:border-zinc-900 dark:prose-blockquote:border-zinc-100 prose-blockquote:bg-zinc-50 dark:prose-blockquote:bg-zinc-900/40 prose-blockquote:py-2 prose-blockquote:px-5 prose-blockquote:rounded-r-xl prose-blockquote:font-normal prose-blockquote:not-italic prose-blockquote:text-zinc-700 dark:prose-blockquote:text-zinc-300
+                prose-a:no-underline hover:prose-a:underline prose-a:underline-offset-4 prose-a:decoration-zinc-300 dark:prose-a:decoration-zinc-700"
                 set:html={finalContent}
-            >
-            </div>
+            />
         </article>
 
         <section
-            class="mt-20 pt-8 border-t border-zinc-200/70 dark:border-zinc-800 disqus-container"
+            class="mt-24 pt-10 border-t border-zinc-200/70 dark:border-zinc-800 disqus-container"
         >
             <h2
-                class="text-lg font-semibold text-zinc-900 dark:text-zinc-100 mb-6"
+                class="text-xl md:text-2xl font-bold text-zinc-900 dark:text-zinc-100 mb-8 tracking-tight"
             >
                 Diskusi
             </h2>
@@ -303,7 +314,8 @@ const pageIdentifier = post.id;
                     .eq("post_id", postId)
                     .maybeSingle();
 
-                const viewsCount = (data && data.views !== undefined) ? data.views : 0;
+                const viewsCount =
+                    data && data.views !== undefined ? data.views : 0;
                 const displayEl = document.getElementById("view-count-display");
                 if (displayEl) {
                     displayEl.innerText = `${viewsCount} views`;

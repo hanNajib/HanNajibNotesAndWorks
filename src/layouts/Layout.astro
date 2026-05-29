@@ -21,18 +21,18 @@ interface Props {
 const {
 	title = "HanNajib — Notes, Works, TIL & Snaps",
 	description = "Selamat datang di ruang digital personal HanNajib. Tempat mendokumentasikan pemikiran mendalam (Notes), portofolio proyek (Works), catatan belajar harian (TIL), serta tangkapan visual estetik (Snaps).",
-	ogImage = "https://images.unsplash.com/photo-1509198397868-475647b2a1e5?q=80&w=800&auto=format&fit=crop", // Default branding image
+	ogImage = "https://images.unsplash.com/photo-1509198397868-475647b2a1e5?q=80&w=800&auto=format&fit=crop",
 	ogType = "website",
 	showHero = true,
 } = Astro.props;
 
 const canonicalURL = new URL(
 	Astro.url.pathname,
-	Astro.site || "https://hannajibnotes.vercel.app"
+	Astro.site || "https://hannajibnotes.vercel.app",
 ).toString();
 ---
 
-<!DOCTYPE html>
+<!doctype html>
 <html lang="id" class="scroll-smooth">
 	<head>
 		<script
@@ -101,24 +101,21 @@ const canonicalURL = new URL(
 		class="bg-stone-50 text-zinc-800 dark:bg-zinc-950 dark:text-zinc-200 min-h-screen flex flex-col antialiased selection:bg-zinc-200 dark:selection:bg-zinc-800"
 	>
 		<div
-			class="max-w-3xl mx-auto px-6 py-12 flex-grow w-full flex flex-col"
+			class="max-w-5xl mx-auto px-6 md:px-8 lg:px-10 py-12 md:py-16 flex-grow w-full flex flex-col transition-all duration-300"
 		>
-			<!-- HEADER -->
 			<header class="mb-2">
-				<div class="flex justify-between items-center mb-6">
-					<!-- Brand / Logo -->
+				<div class="flex justify-between items-center mb-8 md:mb-10">
 					<a href="/" class="group">
 						<h1
-							class="text-xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50 transition-colors"
+							class="text-xl md:text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50 transition-colors"
 						>
 							HanNajib <span
-								class="text-zinc-400 dark:text-zinc-600 font-jetmono text-sm ml-1"
+								class="text-zinc-400 dark:text-zinc-600 font-jetmono text-sm md:text-base ml-1"
 								>/ notes, works, til & snaps</span
 							>
 						</h1>
 					</a>
 
-					<!-- Navigation Controls -->
 					<div class="flex items-center space-x-4">
 						<button
 							id="theme-toggle"
@@ -126,23 +123,22 @@ const canonicalURL = new URL(
 							title="Ubah Tema"
 						>
 							<span class="hidden dark:block"
-								><Sun class="w-4 h-4" />
+								><Sun class="w-5 h-5" />
 							</span>
 							<span class="block dark:hidden"
-								><Moon class="w-4 h-4" />
+								><Moon class="w-5 h-5" />
 							</span>
 						</button>
 					</div>
 				</div>
 
-				<!-- Intro Section -->
 				{
 					showHero && (
 						<div
 							id="intro-bio"
-							class="border-b border-zinc-200 dark:border-zinc-800 pb-8"
+							class="border-b border-zinc-200 dark:border-zinc-800 pb-8 md:pb-10"
 						>
-							<p class="text-sm text-zinc-600 dark:text-zinc-400 leading-relaxed max-w-2xl">
+							<p class="text-sm md:text-base text-zinc-600 dark:text-zinc-400 leading-relaxed md:leading-loose">
 								Halo, saya
 								<span class="text-zinc-900 dark:text-zinc-100 font-semibold">
 									Ahmad Royhan Najib
@@ -162,23 +158,23 @@ const canonicalURL = new URL(
 								serta tangkapan visual estetik (
 								<span class="italic font-serif">Snaps</span>).
 							</p>
-							<div class="mt-4 flex flex-wrap gap-4 text-xs text-zinc-500">
-								<span class="flex items-center gap-1">
-									<MapPin class="w-3.5 h-3.5" /> Indonesia
+							<div class="mt-6 flex flex-wrap gap-5 md:gap-6 text-xs md:text-sm text-zinc-500">
+								<span class="flex items-center gap-1.5">
+									<MapPin class="w-4 h-4" /> Indonesia
 								</span>
 								<a
 									href="mailto:hannajib3@gmail.com"
 									target="_blank"
-									class="flex items-center gap-1 hover:text-zinc-850 dark:hover:text-zinc-150 transition-colors"
+									class="flex items-center gap-1.5 hover:text-zinc-850 dark:hover:text-zinc-150 transition-colors"
 								>
-									<Mail class="w-3.5 h-3.5" /> Hubungi Saya
+									<Mail class="w-4 h-4" /> Hubungi Saya
 								</a>
 								<a
 									href="https://www.linkedin.com/in/hannajib"
 									target="_blank"
-									class="flex items-center gap-1 hover:text-zinc-850 dark:hover:text-zinc-150 transition-colors"
+									class="flex items-center gap-1.5 hover:text-zinc-850 dark:hover:text-zinc-150 transition-colors"
 								>
-									<Linkedin class="w-3.5 h-3.5" /> LinkedIn
+									<Linkedin class="w-4 h-4" /> LinkedIn
 								</a>
 							</div>
 						</div>
@@ -186,55 +182,52 @@ const canonicalURL = new URL(
 				}
 			</header>
 
-			<!-- MAIN CONTENT AREA -->
 			<main class="flex-grow">
 				<slot />
 			</main>
 
-			<!-- FOOTER -->
 			<footer
 				id="footer"
-				class="mt-24 py-8 border-t border-zinc-200 dark:border-zinc-800 text-zinc-500 text-xs"
+				class="mt-28 py-8 border-t border-zinc-200 dark:border-zinc-800 text-zinc-500 text-xs md:text-sm"
 			>
 				<div
-					class="flex flex-col md:flex-row justify-between items-center gap-4 text-zinc-500 dark:text-zinc-400"
+					class="flex flex-col md:flex-row justify-between items-center gap-6 text-zinc-500 dark:text-zinc-400"
 				>
-					<div class="flex flex-wrap items-center gap-x-6 gap-y-2">
+					<div class="flex flex-wrap items-center gap-x-6 gap-y-3">
 						<span class="font-medium"
 							>&copy; {new Date().getFullYear()} HanNajib. All rights
 							reserved.</span
 						>
-
 						<a
 							href="mailto:hello@hannajibnotes.vercel.app"
 							class="hover:text-zinc-850 dark:hover:text-zinc-150 transition-colors flex items-center gap-1.5"
 						>
-							<Mail class="w-3.5 h-3.5" /> hannajib3@gmail.com
+							<Mail class="w-4 h-4" /> hannajib3@gmail.com
 						</a>
 						<a
 							href="https://github.com/hannajib"
 							target="_blank"
 							class="hover:text-zinc-850 dark:hover:text-zinc-150 transition-colors flex items-center gap-1.5"
 						>
-							<Github class="w-3.5 h-3.5" /> hannajib
+							<Github class="w-4 h-4" /> hannajib
 						</a>
 						<a
 							href="https://www.youtube.com/@Hann.Undefined"
 							target="_blank"
 							class="hover:text-zinc-850 dark:hover:text-zinc-150 transition-colors flex items-center gap-1.5"
 						>
-							<Youtube class="w-3.5 h-3.5" /> Hann Undefined.
+							<Youtube class="w-4 h-4" /> Hann Undefined.
 						</a>
 						<a
 							href="https://www.instagram.com/handefined/"
 							target="_blank"
 							class="hover:text-zinc-850 dark:hover:text-zinc-150 transition-colors flex items-center gap-1.5"
 						>
-							<Instagram class="w-3.5 h-3.5" /> handefined.
+							<Instagram class="w-4 h-4" /> handefined.
 						</a>
 					</div>
 					<div
-						class="flex space-x-4 font-jetmono text-[11px] text-zinc-400 dark:text-zinc-600"
+						class="flex space-x-4 font-jetmono text-[11px] md:text-xs text-zinc-400 dark:text-zinc-600"
 					>
 						<button
 							onclick="window.scrollToTop()"
@@ -247,10 +240,8 @@ const canonicalURL = new URL(
 			</footer>
 		</div>
 
-		<!-- Script Toggle Tema -->
 		<script>
 			const themeToggleBtn = document.getElementById("theme-toggle");
-
 			themeToggleBtn?.addEventListener("click", () => {
 				document.documentElement.classList.toggle("dark");
 				const isDark =
@@ -258,12 +249,8 @@ const canonicalURL = new URL(
 				localStorage.setItem("theme", isDark ? "dark" : "light");
 			});
 		</script>
-
-		<!-- Script Lenis Smooth Scroll -->
 		<script>
 			import Lenis from "lenis";
-
-			// Inisialisasi Lenis
 			const lenis = new Lenis({
 				duration: 1.2,
 				easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
@@ -282,13 +269,10 @@ const canonicalURL = new URL(
 			}
 			requestAnimationFrame(raf);
 
-			// Expose helpers ke window
 			(window as any).lenis = lenis;
-
 			(window as any).scrollToTop = () => {
 				lenis.scrollTo(0, { duration: 1 });
 			};
-
 			(window as any).scrollToFooter = () => {
 				const footerEl = document.getElementById("footer");
 				if (footerEl) {

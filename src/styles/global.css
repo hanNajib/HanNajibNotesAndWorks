@@ -21,401 +21,270 @@ body {
     transition: background-color 0.3s ease, color 0.3s ease;
 }
 
+/* ==============================================================
+   TYPOGRAPHY & READABILITY ENHANCEMENTS (Inspired by Reference)
+   ============================================================== */
+/* Memberikan jarak nafas yang sangat lega layaknya buku digital */
+.prose p, .ql-editor p {
+    line-height: 1.8 !important; 
+    margin-top: 1.25em !important;
+    margin-bottom: 1.25em !important;
+    letter-spacing: 0.01em !important;
+}
+
+/* Inline code styling yang lebih manis (seperti di referensi) */
+.prose p code, .prose li code, .ql-editor p code, .ql-editor li code {
+    @apply bg-zinc-100 dark:bg-zinc-800 text-indigo-600 dark:text-indigo-400 px-1.5 py-0.5 rounded-md font-medium text-[0.9em] border border-zinc-200/60 dark:border-zinc-700/60;
+}
+
+/* Link hover transition yang lebih mulus */
+.prose a, .ql-editor a {
+    @apply text-indigo-600 dark:text-indigo-400 underline decoration-indigo-300/50 dark:decoration-indigo-700/50 underline-offset-4 transition-all duration-200;
+}
+.prose a:hover, .ql-editor a:hover {
+    @apply decoration-indigo-600 dark:decoration-indigo-400;
+}
+
+/* ==============================================================
+   DISQUS, SCROLLBAR & LENIS SMOOTH SCROLL
+   ============================================================== */
 #disqus_thread {
     font-family: "Inter", sans-serif;
 }
 
-/* Custom styling untuk Disqus area guna menghindari parsing oklch crash di Tailwind v4 */
 .disqus-container,
 #disqus_thread {
-    color: rgb(63, 63, 70) !important;
-    /* zinc-700 */
-    background-color: rgb(250, 250, 249) !important;
-    /* stone-50 */
+    color: rgb(63, 63, 70) !important; /* zinc-700 */
+    background-color: rgb(250, 250, 249) !important; /* stone-50 */
 }
 
 .dark .disqus-container,
 .dark #disqus_thread {
-    color: rgb(228, 228, 231) !important;
-    /* zinc-200 */
-    background-color: rgb(9, 9, 11) !important;
-    /* zinc-950 */
+    color: rgb(228, 228, 231) !important; /* zinc-200 */
+    background-color: rgb(9, 9, 11) !important; /* zinc-950 */
 }
 
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+.dark ::-webkit-scrollbar-thumb { background: #3f3f46; border-radius: 3px; }
+::-webkit-scrollbar-thumb { background: #e4e4e7; border-radius: 3px; }
 
-/* Custom Scrollbar Minimalis */
-::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
-}
+.scrollbar-none::-webkit-scrollbar { display: none; }
+.scrollbar-none { -ms-overflow-style: none; scrollbar-width: none; }
 
-::-webkit-scrollbar-track {
-    background: transparent;
-}
+html.lenis, html.lenis body { height: auto; }
+.lenis-smooth { scroll-behavior: auto !important; }
+.lenis-smooth [data-lenis-prevent] { overscroll-behavior: contain; }
+.lenis-stopped { overflow: hidden; }
+.lenis-scrolling iframe { pointer-events: none; }
 
-.dark ::-webkit-scrollbar-thumb {
-    background: #3f3f46;
-    border-radius: 3px;
-}
-
-::-webkit-scrollbar-thumb {
-    background: #e4e4e7;
-    border-radius: 3px;
-}
-
-/* Sembunyikan scrollbar pada filter horizontal tapi tetap fungsional */
-.scrollbar-none::-webkit-scrollbar {
-    display: none;
-}
-
-.scrollbar-none {
-    -ms-overflow-style: none;
-    /* IE and Edge */
-    scrollbar-width: none;
-    /* Firefox */
-}
-
-/* Lenis Premium Smooth Scroll CSS */
-html.lenis,
-html.lenis body {
-    height: auto;
-}
-
-.lenis-smooth {
-    scroll-behavior: auto !important;
-}
-
-.lenis-smooth [data-lenis-prevent] {
-    overscroll-behavior: contain;
-}
-
-.lenis-stopped {
-    overflow: hidden;
-}
-
-.lenis-scrolling iframe {
-    pointer-events: none;
-}
-
-/* Quill.js Rich Text Editor Premium Overrides */
+/* ==============================================================
+   QUILL.JS RICH TEXT EDITOR PREMIUM OVERRIDES
+   ============================================================== */
 .ql-toolbar.ql-snow {
-    border: 1px solid #e4e4e7 !important;
-    /* zinc-200 */
+    border: 1px solid #e4e4e7 !important; 
     border-top-left-radius: 0.75rem !important;
     border-top-right-radius: 0.75rem !important;
-    background-color: #fafafa !important;
-    /* zinc-50 */
+    background-color: #fafafa !important; 
     padding: 0.75rem 1rem !important;
     transition: border-color 0.2s ease, background-color 0.2s ease;
 }
 
 .dark .ql-toolbar.ql-snow {
-    border: 1px solid #27272a !important;
-    /* zinc-800 */
-    background-color: #09090b !important;
-    /* zinc-950 */
+    border: 1px solid #27272a !important; 
+    background-color: #09090b !important; 
 }
 
 .ql-container.ql-snow {
-    border: 1px solid #e4e4e7 !important;
-    /* zinc-200 */
+    border: 1px solid #e4e4e7 !important; 
     border-top: none !important;
     border-bottom-left-radius: 0.75rem !important;
     border-bottom-right-radius: 0.75rem !important;
     background-color: #ffffff !important;
     font-family: "Inter", sans-serif !important;
-    font-size: 0.95rem !important;
+    font-size: 1rem !important; 
     transition: border-color 0.2s ease, background-color 0.2s ease;
 }
 
+@media (min-width: 768px) {
+    .ql-container.ql-snow {
+        font-size: 1.125rem !important; 
+    }
+}
+
 .dark .ql-container.ql-snow {
-    border: 1px solid #27272a !important;
-    /* zinc-800 */
+    border: 1px solid #27272a !important; 
     border-top: none !important;
     background-color: #09090b !important;
 }
 
-/* Atur padding editor di dalam Quill agar sangat lega */
 .ql-editor {
     padding: 1.5rem 1.75rem !important;
-    min-height: 400px;
-    line-height: 1.7 !important;
+    min-height: 500px !important;
+    line-height: 1.8 !important; 
     color: #27272a !important;
 }
 
-.dark .ql-editor {
-    color: #e4e4e7 !important;
-}
+.dark .ql-editor { color: #e4e4e7 !important; }
+.ql-editor.ql-blank::before { color: #a1a1aa !important; font-style: normal !important; left: 1.75rem !important; }
+.dark .ql-editor.ql-blank::before { color: #52525b !important; }
+.ql-container.ql-snow:focus-within { border-color: #a1a1aa !important; }
+.dark .ql-container.ql-snow:focus-within { border-color: #52525b !important; }
 
-.ql-editor.ql-blank::before {
-    color: #a1a1aa !important;
-    font-style: normal !important;
-    left: 1.75rem !important;
-}
+.dark .ql-stroke { stroke: #a1a1aa !important; }
+.dark .ql-fill { fill: #a1a1aa !important; }
+.dark .ql-picker { color: #a1a1aa !important; }
+.dark .ql-picker-options { background-color: #18181b !important; border-color: #27272a !important; }
 
-.dark .ql-editor.ql-blank::before {
-    color: #52525b !important;
-}
-
-/* Hilangkan outline fokus biru bawaan browser */
-.ql-container.ql-snow:focus-within {
-    border-color: #a1a1aa !important;
-}
-
-.dark .ql-container.ql-snow:focus-within {
-    border-color: #52525b !important;
-}
-
-/* Quill Dark Mode Icon Colors */
-.dark .ql-stroke {
-    stroke: #a1a1aa !important;
-}
-
-.dark .ql-fill {
-    fill: #a1a1aa !important;
-}
-
-.dark .ql-picker {
-    color: #a1a1aa !important;
-}
-
-.dark .ql-picker-options {
-    background-color: #18181b !important;
-    border-color: #27272a !important;
-}
-
-/* Memastikan list ul dan ol di dalam konten artikel ter-render dengan peluru & nomor yang presisi */
-.prose ul {
+/* List presisi */
+.prose ul, .ql-editor ul {
     list-style-type: disc !important;
     padding-left: 1.5rem !important;
-    margin-top: 0.75rem !important;
-    margin-bottom: 0.75rem !important;
+    margin-top: 0.75em !important;
+    margin-bottom: 0.75em !important;
 }
 
-.prose ol {
+.prose ol, .ql-editor ol {
     list-style-type: decimal !important;
     padding-left: 1.5rem !important;
-    margin-top: 0.75rem !important;
-    margin-bottom: 0.75rem !important;
+    margin-top: 0.75em !important;
+    margin-bottom: 0.75em !important;
 }
 
-.prose li {
+.prose li, .ql-editor li {
     display: list-item !important;
-    margin-top: 0.25rem !important;
-    margin-bottom: 0.25rem !important;
+    margin-top: 0.35em !important;
+    margin-bottom: 0.35em !important;
+    line-height: 1.7 !important;
 }
 
-/* Styling Premium untuk Code Block Bawaan Quill v2 di dalam Konten Artikel */
-.prose .ql-code-block-container {
-    background-color: #18181b !important;
-    /* zinc-900 */
-    border: 1px solid #27272a !important;
-    /* zinc-800 */
-    color: #f4f4f5 !important;
-    /* zinc-100 */
+/* ==============================================================
+   CODE BLOCKS & BLOCKQUOTES (Estetika Premium)
+   ============================================================== */
+.prose .ql-code-block-container, .ql-editor .ql-code-block-container {
+    background-color: #1e1e24 !important; /* Tema gelap halus layaknya Chroma */
+    border: 1px solid #2d2d36 !important; 
+    color: #e4e4e7 !important; 
     font-family: "JetBrains Mono", monospace !important;
     font-size: 0.9rem !important;
-    padding: 1.25rem 1.5rem !important;
+    padding: 1.5rem !important;
     border-radius: 0.75rem !important;
-    margin: 1.5rem 0 !important;
+    margin: 1.75rem 0 !important;
     overflow-x: auto !important;
     line-height: 1.6 !important;
     text-align: left !important;
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
 }
 
-.dark .prose .ql-code-block-container {
-    background-color: #09090b !important;
-    /* zinc-950 */
+@media (min-width: 768px) {
+    .prose .ql-code-block-container, .ql-editor .ql-code-block-container { font-size: 0.95rem !important; }
+}
+
+.dark .prose .ql-code-block-container, .dark .ql-editor .ql-code-block-container {
+    background-color: #0d0d12 !important; 
     border: 1px solid #27272a !important;
 }
 
-.prose .ql-code-block {
+.prose .ql-code-block, .ql-editor .ql-code-block {
     font-family: "JetBrains Mono", monospace !important;
     white-space: pre-wrap !important;
 }
 
-/* Styling Premium untuk Blockquote (Kutipan) di dalam Artikel */
-.prose blockquote {
-    border-left: 4px solid rgb(161, 161, 170) !important;
-    /* zinc-400 */
-    padding-left: 1.5rem !important;
+/* Blockquote ala referensi: Background pastel transparan & rounded */
+.prose blockquote, .ql-editor blockquote {
+    @apply border-l-4 border-zinc-400 dark:border-zinc-600 bg-zinc-100/60 dark:bg-zinc-900/40 px-5 py-4 rounded-r-xl my-8 text-zinc-700 dark:text-zinc-300;
     font-style: italic !important;
-    color: rgb(82, 82, 91) !important;
-    /* zinc-600 */
-    margin: 1.5rem 0 !important;
-    background-color: transparent !important;
-}
-
-.dark .prose blockquote {
-    border-left: 4px solid rgb(63, 63, 70) !important;
-    /* zinc-700 */
-    color: rgb(161, 161, 170) !important;
-    /* zinc-400 */
+    font-size: 1.05em !important;
+    line-height: 1.8 !important;
 }
 
 /* ==============================================================
    MARKDOWN ALERTS (LUCIDE ICONS DENGAN CSS MASKING)
    ============================================================== */
-.md-alert {
-    @apply my-6 rounded-xl border px-4 pb-4 pt-11 text-sm font-medium leading-relaxed relative block;
-}
-
-/* Pseudo-element ::before untuk Teks Judul (Otomatis ambil dari atribut data-alert) */
-.md-alert::before {
-    content: attr(data-alert);
-    @apply absolute top-[14px] left-10 font-bold uppercase tracking-wider text-xs;
-}
-
-/* Pseudo-element ::after untuk Ikon Lucide (Warnanya otomatis merespon Dark Mode) */
+.md-alert { @apply my-8 rounded-xl border px-4 pb-4 pt-11 text-sm font-medium leading-relaxed relative block shadow-sm; }
+.md-alert::before { content: attr(data-alert); @apply absolute top-[14px] left-10 font-bold uppercase tracking-wider text-xs; }
 .md-alert::after {
     content: "";
     @apply absolute top-3 left-4 w-4 h-4 bg-current;
-    -webkit-mask-image: var(--alert-icon);
-    mask-image: var(--alert-icon);
-    -webkit-mask-repeat: no-repeat;
-    mask-repeat: no-repeat;
-    -webkit-mask-position: center;
-    mask-position: center;
-    -webkit-mask-size: contain;
-    mask-size: contain;
+    -webkit-mask-image: var(--alert-icon); mask-image: var(--alert-icon);
+    -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat;
+    -webkit-mask-position: center; mask-position: center;
+    -webkit-mask-size: contain; mask-size: contain;
 }
 
-/* 1. NOTE (Info Icon) */
-.md-alert[data-alert="note"] {
-    @apply border-blue-200 bg-blue-50/80 text-blue-900;
+.md-alert[data-alert="note"] { @apply border-blue-200 bg-blue-50/80 text-blue-900; }
+.md-alert[data-alert="note"]::before, .md-alert[data-alert="note"]::after { @apply text-blue-700 dark:text-blue-400; }
+.md-alert[data-alert="note"] { --alert-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='10'/%3E%3Cpath d='M12 16v-4'/%3E%3Cpath d='M12 8h.01'/%3E%3C/svg%3E"); }
+
+.md-alert[data-alert="tip"] { @apply border-emerald-200 bg-emerald-50/80 text-emerald-900; }
+.md-alert[data-alert="tip"]::before, .md-alert[data-alert="tip"]::after { @apply text-emerald-700 dark:text-emerald-400; }
+.md-alert[data-alert="tip"] { --alert-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.9 1.2 1.5 1.5 2.5'/%3E%3Cpath d='M9 18h6'/%3E%3Cpath d='M10 22h4'/%3E%3C/svg%3E"); }
+
+.md-alert[data-alert="important"] { @apply border-purple-200 bg-purple-50/80 text-purple-900; }
+.md-alert[data-alert="important"]::before, .md-alert[data-alert="important"]::after { @apply text-purple-700 dark:text-purple-400; }
+.md-alert[data-alert="important"] { --alert-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolygon points='13 2 3 14 12 14 11 22 21 10 12 10 13 2'/%3E%3C/svg%3E"); }
+
+.md-alert[data-alert="warning"] { @apply border-orange-200 bg-orange-50/80 text-orange-900; }
+.md-alert[data-alert="warning"]::before, .md-alert[data-alert="warning"]::after { @apply text-orange-700 dark:text-orange-400; }
+.md-alert[data-alert="warning"] { --alert-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z'/%3E%3Cpath d='M12 9v4'/%3E%3Cpath d='M12 17h.01'/%3E%3C/svg%3E"); }
+
+.md-alert[data-alert="caution"] { @apply border-red-200 bg-red-50/80 text-red-900; }
+.md-alert[data-alert="caution"]::before, .md-alert[data-alert="caution"]::after { @apply text-red-700 dark:text-red-400; }
+.md-alert[data-alert="caution"] { --alert-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M7.86 2h8.28L22 7.86v8.28L16.14 22H7.86L2 16.14V7.86L7.86 2z'/%3E%3Cpath d='M12 8v4'/%3E%3Cpath d='M12 16h.01'/%3E%3C/svg%3E"); }
+
+.ql-snow .ql-picker.ql-alert { width: 105px; font-weight: 500; margin-top: -2px; }
+.ql-snow .ql-picker.ql-alert .ql-picker-label::before { content: "Pilih Alert"; }
+.ql-snow .ql-picker.ql-alert .ql-picker-label[data-value="note"]::before, .ql-snow .ql-picker.ql-alert .ql-picker-item[data-value="note"]::before { content: "Note"; color: #1d4ed8; }
+.ql-snow .ql-picker.ql-alert .ql-picker-label[data-value="tip"]::before, .ql-snow .ql-picker.ql-alert .ql-picker-item[data-value="tip"]::before { content: "Tip"; color: #047857; }
+.ql-snow .ql-picker.ql-alert .ql-picker-label[data-value="important"]::before, .ql-snow .ql-picker.ql-alert .ql-picker-item[data-value="important"]::before { content: "Important"; color: #7e22ce; }
+.ql-snow .ql-picker.ql-alert .ql-picker-label[data-value="warning"]::before, .ql-snow .ql-picker.ql-alert .ql-picker-item[data-value="warning"]::before { content: "Warning"; color: #c2410c; }
+.ql-snow .ql-picker.ql-alert .ql-picker-label[data-value="caution"]::before, .ql-snow .ql-picker.ql-alert .ql-picker-item[data-value="caution"]::before { content: "Caution"; color: #b91c1c; }
+.ql-snow .ql-picker.ql-alert .ql-picker-label:not([data-value])::before, .ql-snow .ql-picker.ql-alert .ql-picker-item:not([data-value])::before { content: "Teks Biasa"; color: #52525b; }
+.dark .ql-snow .ql-picker.ql-alert .ql-picker-item:not([data-value])::before { color: #a1a1aa; }
+
+/* ==============================================================
+   ENFORCE PROSE & EDITOR HEADING SIZES (TEXT-WRAP BALANCE)
+   ============================================================== */
+/* Menambahkan text-wrap: balance agar judul tidak terpotong canggung di akhir baris */
+.prose h1, .prose h2, .prose h3, .prose h4, .ql-editor h1, .ql-editor h2, .ql-editor h3, .ql-editor h4 {
+    text-wrap: balance;
 }
 
-.md-alert[data-alert="note"]::before,
-.md-alert[data-alert="note"]::after {
-    @apply text-blue-700 dark:text-blue-400;
+.prose h1 { @apply text-3xl! md:text-4xl! font-extrabold! mt-8! md:mt-12! mb-5! md:mb-6! tracking-tight!; }
+
+.prose h2, .ql-editor h2 { 
+    @apply text-2xl! md:text-3xl! font-bold! mt-10! md:mt-14! mb-4! md:mb-5! tracking-tight!; 
 }
 
-.md-alert[data-alert="note"] {
-    --alert-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='10'/%3E%3Cpath d='M12 16v-4'/%3E%3Cpath d='M12 8h.01'/%3E%3C/svg%3E");
+.prose h3, .ql-editor h3 { 
+    @apply text-xl! md:text-2xl! font-bold! mt-8! md:mt-10! mb-3! md:mb-4! tracking-tight!; 
 }
 
-/* 2. TIP (Lightbulb Icon) */
-.md-alert[data-alert="tip"] {
-    @apply border-emerald-200 bg-emerald-50/80 text-emerald-900;
-}
-
-.md-alert[data-alert="tip"]::before,
-.md-alert[data-alert="tip"]::after {
-    @apply text-emerald-700 dark:text-emerald-400;
-}
-
-.md-alert[data-alert="tip"] {
-    --alert-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.9 1.2 1.5 1.5 2.5'/%3E%3Cpath d='M9 18h6'/%3E%3Cpath d='M10 22h4'/%3E%3C/svg%3E");
-}
-
-/* 3. IMPORTANT (Zap Icon) */
-.md-alert[data-alert="important"] {
-    @apply border-purple-200 bg-purple-50/80 text-purple-900;
-}
-
-.md-alert[data-alert="important"]::before,
-.md-alert[data-alert="important"]::after {
-    @apply text-purple-700 dark:text-purple-400;
-}
-
-.md-alert[data-alert="important"] {
-    --alert-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolygon points='13 2 3 14 12 14 11 22 21 10 12 10 13 2'/%3E%3C/svg%3E");
-}
-
-/* 4. WARNING (Triangle Alert Icon) */
-.md-alert[data-alert="warning"] {
-    @apply border-orange-200 bg-orange-50/80 text-orange-900;
-}
-
-.md-alert[data-alert="warning"]::before,
-.md-alert[data-alert="warning"]::after {
-    @apply text-orange-700 dark:text-orange-400;
-}
-
-.md-alert[data-alert="warning"] {
-    --alert-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z'/%3E%3Cpath d='M12 9v4'/%3E%3Cpath d='M12 17h.01'/%3E%3C/svg%3E");
-}
-
-/* 5. CAUTION (Octagon Alert Icon) */
-.md-alert[data-alert="caution"] {
-    @apply border-red-200 bg-red-50/80 text-red-900;
-}
-
-.md-alert[data-alert="caution"]::before,
-.md-alert[data-alert="caution"]::after {
-    @apply text-red-700 dark:text-red-400;
-}
-
-.md-alert[data-alert="caution"] {
-    --alert-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M7.86 2h8.28L22 7.86v8.28L16.14 22H7.86L2 16.14V7.86L7.86 2z'/%3E%3Cpath d='M12 8v4'/%3E%3Cpath d='M12 16h.01'/%3E%3C/svg%3E");
-}
-
-/* Desain Dropdown Pilihan di Quill (Tanpa Emoji) */
-.ql-snow .ql-picker.ql-alert {
-    width: 105px;
-    font-weight: 500;
-    margin-top: -2px;
-}
-
-.ql-snow .ql-picker.ql-alert .ql-picker-label::before {
-    content: "Pilih Alert";
-}
-
-.ql-snow .ql-picker.ql-alert .ql-picker-label[data-value="note"]::before,
-.ql-snow .ql-picker.ql-alert .ql-picker-item[data-value="note"]::before {
-    content: "Note";
-    color: #1d4ed8;
-}
-
-.ql-snow .ql-picker.ql-alert .ql-picker-label[data-value="tip"]::before,
-.ql-snow .ql-picker.ql-alert .ql-picker-item[data-value="tip"]::before {
-    content: "Tip";
-    color: #047857;
-}
-
-.ql-snow .ql-picker.ql-alert .ql-picker-label[data-value="important"]::before,
-.ql-snow .ql-picker.ql-alert .ql-picker-item[data-value="important"]::before {
-    content: "Important";
-    color: #7e22ce;
-}
-
-.ql-snow .ql-picker.ql-alert .ql-picker-label[data-value="warning"]::before,
-.ql-snow .ql-picker.ql-alert .ql-picker-item[data-value="warning"]::before {
-    content: "Warning";
-    color: #c2410c;
-}
-
-.ql-snow .ql-picker.ql-alert .ql-picker-label[data-value="caution"]::before,
-.ql-snow .ql-picker.ql-alert .ql-picker-item[data-value="caution"]::before {
-    content: "Caution";
-    color: #b91c1c;
-}
-
-.ql-snow .ql-picker.ql-alert .ql-picker-label:not([data-value])::before,
-.ql-snow .ql-picker.ql-alert .ql-picker-item:not([data-value])::before {
-    content: "Teks Biasa";
-    color: #52525b;
-}
-
-.dark .ql-snow .ql-picker.ql-alert .ql-picker-item:not([data-value])::before {
-    color: #a1a1aa;
+.prose h4, .ql-editor h4 { 
+    @apply text-lg! md:text-xl! font-bold! mt-6! md:mt-8! mb-2! md:mb-3! tracking-tight!; 
 }
 
 /* ==============================================================
-   ENFORCE PROSE HEADING SIZES (Tailwind v4 Way)
+   QUILL TEXT ALIGNMENTS & IMAGE CAPTION STYLING
    ============================================================== */
-.prose h1 {
-    @apply text-4xl! font-extrabold! mt-10! mb-5! tracking-tight!;
+/* Mendukung rata kiri, tengah, kanan, dan justified pada teks blog */
+.prose .ql-align-center, .ql-editor .ql-align-center {
+    text-align: center !important;
+}
+.prose .ql-align-right, .ql-editor .ql-align-right {
+    text-align: right !important;
+}
+.prose .ql-align-justify, .ql-editor .ql-align-justify {
+    text-align: justify !important;
 }
 
-.prose h2 {
-    @apply text-3xl! font-bold! mt-10! mb-4! tracking-tight!;
+/* Estetika Keterangan/Caption Gambar Premium secara Otomatis */
+.prose p:has(img) + p,
+.prose p:has(iframe) + p,
+.prose figure figcaption {
+    @apply text-xs! text-zinc-400 dark:text-zinc-500 mt-2! mb-6! block text-center font-mono leading-relaxed max-w-xl mx-auto;
 }
-
-.prose h3 {
-    @apply text-2xl! font-bold! mt-8! mb-3! tracking-tight!;
-}
-
-.prose h4 {
-    @apply text-xl! font-bold! mt-6! mb-2! tracking-tight!;
+/* Menghilangkan margin atas ekstra jika caption menggunakan format miring (em) */
+.prose p:has(img) + p em {
+    @apply not-italic;
 }
