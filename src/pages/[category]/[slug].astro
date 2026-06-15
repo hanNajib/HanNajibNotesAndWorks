@@ -133,6 +133,11 @@ const pageIdentifier = post.id;
         slot="head"
         set:html={JSON.stringify(jsonLd)}
     />
+    <link
+        slot="head"
+        href="https://cdn.jsdelivr.net/npm/quill@2.0.2/dist/quill.snow.css"
+        rel="stylesheet"
+    />
 
     <div class="max-w-4xl mx-auto py-6 md:py-10">
         <div class="mb-8">
@@ -211,22 +216,25 @@ const pageIdentifier = post.id;
                 )
             }
 
-            <div
-                class="prose prose-zinc dark:prose-invert max-w-none md:prose-lg leading-loose
-                prose-p:my-5 md:prose-p:my-6
-                prose-ul:list-disc prose-ul:pl-6 prose-ol:list-decimal prose-ol:pl-6
-                prose-li:my-2 prose-li:marker:text-zinc-500
-                prose-headings:font-bold prose-headings:tracking-tight prose-headings:scroll-mt-28
-                prose-h2:text-2xl md:prose-h2:text-3xl prose-h2:mt-12 prose-h2:mb-5
-                prose-h3:text-xl md:prose-h3:text-2xl prose-h3:mt-8 prose-h3:mb-3
-                prose-img:rounded-2xl md:prose-img:rounded-3xl prose-img:my-8 prose-img:shadow-md
-                prose-pre:rounded-2xl md:prose-pre:rounded-3xl prose-pre:px-6 prose-pre:py-5 prose-pre:shadow-sm
-                prose-code:text-[0.9em] prose-code:before:content-none prose-code:after:content-none
-                prose-code:bg-zinc-100 dark:prose-code:bg-zinc-800 prose-code:text-pink-600 dark:prose-code:text-pink-400 prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded-md prose-code:font-medium
-                prose-blockquote:border-l-4 prose-blockquote:border-zinc-900 dark:prose-blockquote:border-zinc-100 prose-blockquote:bg-zinc-50 dark:prose-blockquote:bg-zinc-900/40 prose-blockquote:py-2 prose-blockquote:px-5 prose-blockquote:rounded-r-xl prose-blockquote:font-normal prose-blockquote:not-italic prose-blockquote:text-zinc-700 dark:prose-blockquote:text-zinc-300
-                prose-a:no-underline hover:prose-a:underline prose-a:underline-offset-4 prose-a:decoration-zinc-300 dark:prose-a:decoration-zinc-700"
-                set:html={finalContent}
-            />
+            <div class="ql-snow">
+                <div
+                    class="ql-editor prose prose-zinc dark:prose-invert max-w-none md:prose-lg leading-loose
+                    prose-p:my-5 md:prose-p:my-6
+                    prose-ul:list-disc prose-ul:pl-6 prose-ol:list-decimal prose-ol:pl-6
+                    prose-li:my-2 prose-li:marker:text-zinc-500
+                    prose-headings:font-bold prose-headings:tracking-tight prose-headings:scroll-mt-28
+                    prose-h2:text-2xl md:prose-h2:text-3xl prose-h2:mt-12 prose-h2:mb-5
+                    prose-h3:text-xl md:prose-h3:text-2xl prose-h3:mt-8 prose-h3:mb-3
+                    prose-img:rounded-2xl md:prose-img:rounded-3xl prose-img:my-8 prose-img:shadow-md
+                    prose-pre:rounded-2xl md:prose-pre:rounded-3xl prose-pre:px-6 prose-pre:py-5 prose-pre:shadow-sm
+                    prose-code:text-[0.9em] prose-code:before:content-none prose-code:after:content-none
+                    prose-code:bg-zinc-100 dark:prose-code:bg-zinc-800 prose-code:text-pink-600 dark:prose-code:text-pink-400 prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded-md prose-code:font-medium
+                    prose-blockquote:border-l-4 prose-blockquote:border-zinc-900 dark:prose-blockquote:border-zinc-100 prose-blockquote:bg-zinc-50 dark:prose-blockquote:bg-zinc-900/40 prose-blockquote:py-2 prose-blockquote:px-5 prose-blockquote:rounded-r-xl prose-blockquote:font-normal prose-blockquote:not-italic prose-blockquote:text-zinc-700 dark:prose-blockquote:text-zinc-300
+                    prose-a:no-underline hover:prose-a:underline prose-a:underline-offset-4 prose-a:decoration-zinc-300 dark:prose-a:decoration-zinc-700"
+                    style="padding: 0 !important; min-height: auto !important;"
+                    set:html={finalContent}
+                />
+            </div>
         </article>
 
         <section
