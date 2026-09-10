@@ -1,0 +1,15 @@
+{
+  "redirects": [
+    {
+      "source": "/(.*)",
+      "has": [
+        {
+          "type": "host",
+          "value": "hannajibnotes.vercel.app"
+        }
+      ],
+      "destination": "https://blog.hannajib.my.id/$1",
+      "permanent": true
+    }
+  ]
+}
