@@ -50,14 +50,28 @@ export async function getStaticPaths() {
                     category: categoryPath,
                     slug: post.slug,
                 },
-                props: { post },
+                props: {
+                    post,
+                    relatedPosts: posts
+                        .filter(
+                            (candidate) =>
+                                candidate.category === post.category &&
+                                candidate.slug !== post.slug,
+                        )
+                        .sort(
+                            (firstPost, secondPost) =>
+                                new Date(secondPost.created_at).getTime() -
+                                new Date(firstPost.created_at).getTime(),
+                        )
+                        .slice(0, 3),
+                },
             };
         }) || []
     );
 }
 
 const { category, slug } = Astro.params;
-const { post } = Astro.props;
+const { post, relatedPosts } = Astro.props;
 
 const finalContent = parseMarkdownAlerts(post.content);
 
@@ -237,6 +251,43 @@ const pageIdentifier = post.id;
             </div>
         </article>
 
+        {
+            relatedPosts.length > 0 && (
+                <section class="mt-20 pt-10 border-t border-zinc-200/70 dark:border-zinc-800">
+                    <h2 class="text-xl md:text-2xl font-bold text-zinc-900 dark:text-zinc-100 mb-8 tracking-tight">
+                        
+                    </h2>
+
+                    <div class="grid gap-6 md:grid-cols-3">
+                        {relatedPosts.map((relatedPost) => {
+                            const relatedCategoryPath =
+                                relatedPost.category === "note"
+                                    ? "notes"
+                                    : relatedPost.category === "work"
+                                      ? "works"
+                                      : relatedPost.category === "til"
+                                        ? "til"
+                                        : "snaps";
+
+                            return (
+                                <a
+                                    href={`/${relatedCategoryPath}/${relatedPost.slug}`}
+                                    class="group block border-b border-zinc-200/70 pb-4 dark:border-zinc-800 md:border-b-0 md:border-l md:pl-5"
+                                >
+                                    <span class="font-mono text-xs uppercase tracking-wider text-zinc-400 dark:text-zinc-500">
+                                        {relatedPost.category}
+                                    </span>
+                                    <h3 class="mt-2 text-base font-bold leading-snug text-zinc-900 transition-colors group-hover:text-zinc-500 dark:text-zinc-100 dark:group-hover:text-zinc-400">
+                                        {relatedPost.title}
+                                    </h3>
+                                </a>
+                            );
+                        })}
+                    </div>
+                </section>
+            )
+        }
+
         <section
             class="mt-24 pt-10 border-t border-zinc-200/70 dark:border-zinc-800 disqus-container"
         >
@@ -305,7 +356,6 @@ const pageIdentifier = post.id;
             const sessionKey = `viewed_${slug}`;
 
             try {
-                // 1. Jalankan increment RPC jika sesi ini belum melihat artikel
                 if (!sessionStorage.getItem(sessionKey)) {
                     const { error } = await supabase.rpc("increment_views", {
                         post_slug: slug,
@@ -315,7 +365,6 @@ const pageIdentifier = post.id;
                     }
                 }
 
-                // 2. Tarik jumlah views terupdate dari Supabase secara real-time (tabel post_views)
                 const { data, error } = await supabase
                     .from("post_views")
                     .select("views")
