@@ -8,7 +8,7 @@ import vercel from "@astrojs/vercel";
 
 // https://astro.build/config
 export default defineConfig({
-  site: "https://blog.hannajib.my.id",
+  site: "https://blog.hannajib.web.id",
   output: 'server',
 
   vite: {
