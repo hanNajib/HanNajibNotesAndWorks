@@ -2,16 +2,6 @@
 import AdminLayout from "../../../layouts/AdminLayout.astro";
 import { supabase } from "../../../lib/supabase";
 
-export async function getStaticPaths() {
-  const { data: posts } = await supabase.from("posts").select("slug");
-
-  return (
-    posts?.map((post) => ({
-      params: { slug: post.slug },
-    })) || []
-  );
-}
-
 const { slug } = Astro.params;
 
 // Tarik data tulisan yang ada saat ini dari Supabase
