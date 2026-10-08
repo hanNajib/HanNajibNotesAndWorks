@@ -1,11 +1,12 @@
 ---
 import AdminLayout from "../../../layouts/AdminLayout.astro";
 import { supabase } from "../../../lib/supabase";
+import { supabaseAdmin } from "../../../lib/supabase-admin";
 
 const { slug } = Astro.params;
 
-// Tarik data tulisan yang ada saat ini dari Supabase
-const { data: post } = await supabase
+// Tarik data tulisan yang ada saat ini dari Supabase (gunakan admin client untuk bypass RLS)
+const { data: post } = await supabaseAdmin
   .from("posts")
   .select("*")
   .eq("slug", slug)
