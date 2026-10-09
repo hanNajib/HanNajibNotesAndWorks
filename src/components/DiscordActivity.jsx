@@ -36,6 +36,10 @@ function getAssetUrl(asset, userId, applicationId) {
 
 function getActivityText(activity) {
     if (!activity) return "No activity";
+    // Custom Status (type 4) - show state only
+    if (activity.type === 4 && activity.state) {
+    	return activity.state;
+    }
     const label = activityLabels[activity.type] || "Using";
     return `${label} ${activity.name}`;
 }
@@ -199,6 +203,7 @@ export default function DiscordActivity() {
     const status = payload.discord_status || "offline";
     const currentActivity = activities[activityIndex];
     const isSpotify = currentActivity?.kind === "spotify";
+    const isCustomStatus = currentActivity?.type === 4;
     const activityTitle = isSpotify
         ? `Listening to ${currentActivity.song}`
         : getActivityText(currentActivity);
@@ -343,10 +348,10 @@ export default function DiscordActivity() {
                                     )}
                                     <div className="min-w-0 flex-1">
                                         <p className="mb-0.5 font-jetmono text-[10px] uppercase tracking-wider text-zinc-400 dark:text-zinc-500">
-                                            {isSpotify ? "Spotify" : "Activity"}
+                                            {isSpotify ? "Spotify" : isCustomStatus ? "Status" : "Activity"}
                                         </p>
                                         <p className="truncate text-sm font-semibold text-zinc-900 dark:text-zinc-100">
-                                            {isSpotify ? currentActivity.song : currentActivity.name}
+                                            {isSpotify ? currentActivity.song : isCustomStatus ? currentActivity.state : currentActivity.name}
                                         </p>
                                         {isSpotify ? (
                                             <>
@@ -368,9 +373,11 @@ export default function DiscordActivity() {
                                             </>
                                         ) : (
                                             <>
-                                                <p className="truncate text-xs text-zinc-600 dark:text-zinc-400">
-                                                    {currentActivity.details || currentActivity.state || "Active"}
-                                                </p>
+                                                {!isCustomStatus && (
+                                                    <p className="truncate text-xs text-zinc-600 dark:text-zinc-400">
+                                                        {currentActivity.details || currentActivity.state || "Active"}
+                                                    </p>
+                                                )}
                                                 {elapsedTime && (
                                                     <p className="mt-1 font-jetmono text-[9px] text-zinc-400 dark:text-zinc-500">
                                                         {elapsedTime} elapsed
