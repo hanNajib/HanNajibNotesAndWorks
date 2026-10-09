@@ -55,6 +55,7 @@ export default function DiscordActivity() {
     const [error, setError] = useState(false);
     const [spotifyProgress, setSpotifyProgress] = useState(0);
     const [isTransitioning, setIsTransitioning] = useState(false);
+    const [isCollapsed, setIsCollapsed] = useState(false);
 
     useEffect(() => {
         let isMounted = true;
@@ -96,6 +97,21 @@ export default function DiscordActivity() {
     useEffect(() => {
         if (activityIndex >= activities.length) setActivityIndex(0);
     }, [activities.length, activityIndex]);
+
+    useEffect(() => {
+        const isMobile = window.matchMedia("(max-width: 767px)").matches;
+
+        if (isOpen || !isMobile) {
+            setIsCollapsed(false);
+            return;
+        }
+
+        const collapseTimer = window.setTimeout(() => {
+            setIsCollapsed(true);
+        }, 4000);
+
+        return () => window.clearTimeout(collapseTimer);
+    }, [isOpen, payload]);
 
     // Auto-rotate activities every 5 seconds (only when closed)
     useEffect(() => {
@@ -184,10 +200,17 @@ export default function DiscordActivity() {
         <div className="fixed bottom-6 left-6 z-40 scale-90 md:scale-100">
             <button
                 type="button"
-                onClick={() => setIsOpen((open) => !open)}
+                onClick={() => {
+                    setIsCollapsed(false);
+                    setIsOpen((open) => !open);
+                }}
                 aria-expanded={isOpen}
-                aria-label="Discord activity"
-                className="flex items-center gap-3 rounded-xl border border-zinc-200 bg-white/90 px-3 py-2.5 shadow-lg backdrop-blur-sm transition-all hover:shadow-xl dark:border-zinc-800 dark:bg-zinc-900/90"
+                aria-label={isCollapsed ? "Show Discord activity" : "Discord activity"}
+                className={`flex items-center gap-3 border border-zinc-200 bg-white/90 shadow-lg backdrop-blur-sm transition-[width,padding,border-radius] duration-300 hover:shadow-xl dark:border-zinc-800 dark:bg-zinc-900/90 ${
+                    isCollapsed
+                        ? "h-11 w-11 justify-center rounded-full p-1.5"
+                        : "rounded-xl px-3 py-2.5"
+                }`}
             >
                 <div className="relative shrink-0">
                     {avatarUrl ? (
@@ -203,7 +226,11 @@ export default function DiscordActivity() {
                         className={`absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full ring-2 ring-white dark:ring-zinc-900 ${statusColors[status] || statusColors.offline}`}
                     />
                 </div>
-                <div className="min-w-0 max-w-[180px] overflow-hidden">
+                <div
+                    className={`min-w-0 overflow-hidden transition-[max-width,opacity] duration-300 ${
+                        isCollapsed ? "max-w-0 opacity-0" : "max-w-[180px] opacity-100"
+                    }`}
+                >
                     <div
                         className="transition-transform duration-200 ease-in-out"
                         style={{
