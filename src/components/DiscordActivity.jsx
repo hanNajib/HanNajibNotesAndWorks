@@ -99,16 +99,14 @@ export default function DiscordActivity() {
     }, [activities.length, activityIndex]);
 
     useEffect(() => {
-        const isMobile = window.matchMedia("(max-width: 767px)").matches;
-
-        if (isOpen || !isMobile) {
+        if (isOpen) {
             setIsCollapsed(false);
             return;
         }
 
         const collapseTimer = window.setTimeout(() => {
             setIsCollapsed(true);
-        }, 4000);
+        }, 5000);
 
         return () => window.clearTimeout(collapseTimer);
     }, [isOpen, payload]);
@@ -206,10 +204,10 @@ export default function DiscordActivity() {
                 }}
                 aria-expanded={isOpen}
                 aria-label={isCollapsed ? "Show Discord activity" : "Discord activity"}
-                className={`flex items-center gap-3 border border-zinc-200 bg-white/90 shadow-lg backdrop-blur-sm transition-[width,padding,border-radius] duration-300 hover:shadow-xl dark:border-zinc-800 dark:bg-zinc-900/90 ${
+                className={`group flex items-center gap-3 border bg-white/90 shadow-lg backdrop-blur-sm transition-all duration-500 ease-out dark:bg-zinc-900/90 ${
                     isCollapsed
-                        ? "h-11 w-11 justify-center rounded-full p-1.5"
-                        : "rounded-xl px-3 py-2.5"
+                        ? "h-12 w-12 scale-95 justify-center rounded-full border-zinc-300/50 p-1 hover:scale-100 hover:border-zinc-300 hover:shadow-2xl dark:border-zinc-700/50 dark:hover:border-zinc-700"
+                        : "scale-100 rounded-xl border-zinc-200 px-3 py-2.5 hover:scale-[1.02] hover:border-zinc-300 hover:shadow-xl dark:border-zinc-800 dark:hover:border-zinc-700"
                 }`}
             >
                 <div className="relative shrink-0">
@@ -217,22 +215,28 @@ export default function DiscordActivity() {
                         <img
                             src={avatarUrl}
                             alt=""
-                            className="h-9 w-9 rounded-full object-cover"
+                            className={`rounded-full object-cover transition-all duration-500 ${
+                            	isCollapsed ? "h-10 w-10" : "h-9 w-9"
+                            }`}
                         />
                     ) : (
-                        <div className="h-9 w-9 rounded-full bg-zinc-200 dark:bg-zinc-800" />
+                        <div className={`rounded-full bg-zinc-200 transition-all duration-500 dark:bg-zinc-800 ${
+                            isCollapsed ? "h-10 w-10" : "h-9 w-9"
+                        }`} />
                     )}
                     <span
-                        className={`absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full ring-2 ring-white dark:ring-zinc-900 ${statusColors[status] || statusColors.offline}`}
+                        className={`absolute -bottom-0.5 -right-0.5 rounded-full ring-2 ring-white transition-all duration-500 dark:ring-zinc-900 ${
+                            isCollapsed ? "h-3.5 w-3.5 scale-110" : "h-3 w-3 scale-100"
+                        } ${statusColors[status] || statusColors.offline}`}
                     />
                 </div>
                 <div
-                    className={`min-w-0 overflow-hidden transition-[max-width,opacity] duration-300 ${
-                        isCollapsed ? "max-w-0 opacity-0" : "max-w-[180px] opacity-100"
+                    className={`min-w-0 overflow-hidden transition-all duration-500 ease-out ${
+                        isCollapsed ? "max-w-0 opacity-0" : "max-w-[180px] opacity-100 delay-100"
                     }`}
                 >
                     <div
-                        className="transition-transform duration-200 ease-in-out"
+                        className="transition-all duration-300 ease-in-out"
                         style={{
                             transform: isTransitioning ? 'translateY(-100%)' : 'translateY(0)',
                             opacity: isTransitioning ? 0 : 1
@@ -249,7 +253,9 @@ export default function DiscordActivity() {
             </button>
 
             {isOpen && (
-                <div className="absolute bottom-full left-0 mb-2 w-80 max-w-[calc(100vw-3rem)] rounded-xl border border-zinc-200 bg-white/95 p-4 shadow-xl backdrop-blur-sm transition-opacity duration-200 dark:border-zinc-800 dark:bg-zinc-900/95">
+                <div className="absolute bottom-full left-0 mb-2 w-80 max-w-[calc(100vw-3rem)] animate-in rounded-xl border border-zinc-200 bg-white/95 p-4 shadow-xl backdrop-blur-sm transition-all duration-300 dark:border-zinc-800 dark:bg-zinc-900/95" style={{
+                	animation: 'slideUpFadeIn 0.3s ease-out'
+                }}>
                     <div className="mb-3 flex items-start justify-between">
                         <div className="flex items-center gap-3">
                             <div className="relative">
@@ -278,7 +284,7 @@ export default function DiscordActivity() {
                         <button
                             type="button"
                             onClick={() => setIsOpen(false)}
-                            className="rounded-lg p-1 text-zinc-400 transition-colors hover:bg-zinc-100 hover:text-zinc-800 dark:hover:bg-zinc-800 dark:hover:text-zinc-200"
+                            className="rounded-lg p-1 text-zinc-400 transition-all duration-200 hover:scale-110 hover:bg-zinc-100 hover:text-zinc-800 hover:rotate-90 active:scale-95 dark:hover:bg-zinc-800 dark:hover:text-zinc-200"
                             aria-label="Close"
                         >
                             <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -290,18 +296,18 @@ export default function DiscordActivity() {
                     {currentActivity && (
                         <div className="overflow-hidden">
                             <div
-                                className="space-y-3 transition-all duration-200 ease-in-out"
+                                className="space-y-3 transition-all duration-300 ease-out"
                                 style={{
                                     transform: isTransitioning ? 'translateY(20px)' : 'translateY(0)',
                                     opacity: isTransitioning ? 0 : 1
                                 }}
                             >
-                                <div className="flex gap-3 rounded-lg border border-zinc-200 bg-zinc-50/50 p-3 dark:border-zinc-800 dark:bg-zinc-800/50">
+                                <div className="flex gap-3 rounded-lg border border-zinc-200 bg-zinc-50/50 p-3 transition-colors duration-200 hover:border-zinc-300 hover:bg-zinc-100/50 dark:border-zinc-800 dark:bg-zinc-800/50 dark:hover:border-zinc-700 dark:hover:bg-zinc-700/50">
                                     {activityImage && (
                                         <img
                                             src={activityImage}
                                             alt=""
-                                            className="h-16 w-16 shrink-0 rounded-lg object-cover"
+                                            className="h-16 w-16 shrink-0 rounded-lg object-cover transition-transform duration-300 hover:scale-105"
                                         />
                                     )}
                                     <div className="min-w-0 flex-1">
@@ -319,7 +325,7 @@ export default function DiscordActivity() {
                                                 <div className="mt-2">
                                                     <div className="mb-1 h-1 w-full overflow-hidden rounded-full bg-zinc-200 dark:bg-zinc-800">
                                                         <div
-                                                            className="h-full bg-emerald-500 transition-all duration-1000"
+                                                            className="h-full bg-gradient-to-r from-emerald-400 to-emerald-600 transition-all duration-1000 ease-linear"
                                                             style={{ width: `${spotifyProgress}%` }}
                                                         />
                                                     </div>
