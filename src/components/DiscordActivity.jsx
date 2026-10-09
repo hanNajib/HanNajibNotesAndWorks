@@ -43,9 +43,21 @@ function getActivityText(activity) {
 function formatTime(ms) {
     if (!ms || ms < 0) return "0:00";
     const totalSeconds = Math.floor(ms / 1000);
-    const minutes = Math.floor(totalSeconds / 60);
+    const hours = Math.floor(totalSeconds / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
     const seconds = totalSeconds % 60;
+	
+    if (hours > 0) {
+    	return `${hours}:${minutes.toString().padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`;
+    }
     return `${minutes}:${seconds.toString().padStart(2, "0")}`;
+}
+
+function formatElapsedTime(startTimestamp) {
+    if (!startTimestamp) return null;
+    const now = Date.now();
+    const elapsed = now - startTimestamp;
+    return formatTime(elapsed);
 }
 
 export default function DiscordActivity() {
@@ -56,6 +68,7 @@ export default function DiscordActivity() {
     const [spotifyProgress, setSpotifyProgress] = useState(0);
     const [isTransitioning, setIsTransitioning] = useState(false);
     const [isCollapsed, setIsCollapsed] = useState(false);
+    const [elapsedTime, setElapsedTime] = useState("");
 
     useEffect(() => {
         let isMounted = true;
@@ -149,6 +162,24 @@ export default function DiscordActivity() {
         updateProgress();
         const progressInterval = window.setInterval(updateProgress, 1000);
         return () => window.clearInterval(progressInterval);
+    }, [activities, activityIndex]);
+
+    // Update elapsed time for all activities
+    useEffect(() => {
+        const currentActivity = activities[activityIndex];
+        if (!currentActivity || !currentActivity.timestamps?.start) {
+            setElapsedTime("");
+            return;
+        }
+
+        const updateElapsed = () => {
+            const formatted = formatElapsedTime(currentActivity.timestamps.start);
+            setElapsedTime(formatted || "");
+        };
+
+        updateElapsed();
+        const elapsedInterval = window.setInterval(updateElapsed, 1000);
+        return () => window.clearInterval(elapsedInterval);
     }, [activities, activityIndex]);
 
     const changeActivity = (direction) => {
@@ -336,9 +367,16 @@ export default function DiscordActivity() {
                                                 </div>
                                             </>
                                         ) : (
-                                            <p className="truncate text-xs text-zinc-600 dark:text-zinc-400">
-                                                {currentActivity.details || currentActivity.state || "Active"}
-                                            </p>
+                                            <>
+                                                <p className="truncate text-xs text-zinc-600 dark:text-zinc-400">
+                                                    {currentActivity.details || currentActivity.state || "Active"}
+                                                </p>
+                                                {elapsedTime && (
+                                                    <p className="mt-1 font-jetmono text-[9px] text-zinc-400 dark:text-zinc-500">
+                                                        {elapsedTime} elapsed
+                                                    </p>
+                                                )}
+                                            </>
                                         )}
                                     </div>
                                 </div>
