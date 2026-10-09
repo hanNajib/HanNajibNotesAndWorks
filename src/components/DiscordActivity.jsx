@@ -1,0 +1,341 @@
+import { useEffect, useMemo, useState } from "react";
+
+const DISCORD_ID = "734571877162549262";
+const LANYARD_URL = `https://api.lanyard.rest/v1/users/${DISCORD_ID}`;
+
+const statusColors = {
+    online: "bg-emerald-500",
+    idle: "bg-amber-500",
+    dnd: "bg-red-500",
+    offline: "bg-zinc-400 dark:bg-zinc-600",
+};
+
+const activityLabels = {
+    0: "Playing",
+    1: "Streaming",
+    2: "Listening to",
+    3: "Watching",
+    4: "Custom",
+    5: "Competing in",
+};
+
+function getAssetUrl(asset, userId, applicationId) {
+    if (!asset) return null;
+    if (asset.startsWith("mp:")) {
+        return `https://media.discordapp.net/${asset.slice(3)}`;
+    }
+    if (asset.startsWith("http")) return asset;
+    if (applicationId) {
+        return `https://cdn.discordapp.com/app-assets/${applicationId}/${asset}.png`;
+    }
+    if (userId) {
+        return `https://cdn.discordapp.com/avatars/${userId}/${asset}.png`;
+    }
+    return null;
+}
+
+function getActivityText(activity) {
+    if (!activity) return "No activity";
+    const label = activityLabels[activity.type] || "Using";
+    return `${label} ${activity.name}`;
+}
+
+function formatTime(ms) {
+    if (!ms || ms < 0) return "0:00";
+    const totalSeconds = Math.floor(ms / 1000);
+    const minutes = Math.floor(totalSeconds / 60);
+    const seconds = totalSeconds % 60;
+    return `${minutes}:${seconds.toString().padStart(2, "0")}`;
+}
+
+export default function DiscordActivity() {
+    const [payload, setPayload] = useState(null);
+    const [isOpen, setIsOpen] = useState(false);
+    const [activityIndex, setActivityIndex] = useState(0);
+    const [error, setError] = useState(false);
+    const [spotifyProgress, setSpotifyProgress] = useState(0);
+    const [isTransitioning, setIsTransitioning] = useState(false);
+
+    useEffect(() => {
+        let isMounted = true;
+
+        const fetchActivity = async () => {
+            try {
+                const response = await fetch(LANYARD_URL);
+                if (!response.ok) throw new Error(`Lanyard status: ${response.status}`);
+                const result = await response.json();
+                if (isMounted) {
+                    setPayload(result.data);
+                    setError(false);
+                }
+            } catch (fetchError) {
+                console.error("Gagal memuat Discord activity:", fetchError);
+                if (isMounted) setError(true);
+            }
+        };
+
+        fetchActivity();
+        const intervalId = window.setInterval(fetchActivity, 15000);
+        return () => {
+            isMounted = false;
+            window.clearInterval(intervalId);
+        };
+    }, []);
+
+    const activities = useMemo(() => {
+        if (!payload) return [];
+        const spotifyActivity = payload.listening_to_spotify && payload.spotify
+            ? [{ kind: "spotify", ...payload.spotify }]
+            : [];
+        const otherActivities = (payload.activities || [])
+            .filter((activity) => activity.name !== "Spotify")
+            .map((activity) => ({ kind: "discord", ...activity }));
+        return [...spotifyActivity, ...otherActivities];
+    }, [payload]);
+
+    useEffect(() => {
+        if (activityIndex >= activities.length) setActivityIndex(0);
+    }, [activities.length, activityIndex]);
+
+    // Auto-rotate activities every 5 seconds (only when closed)
+    useEffect(() => {
+        if (activities.length <= 1 || isOpen) return;
+
+        let timer;
+        const rotateInterval = window.setInterval(() => {
+            setIsTransitioning(true);
+            timer = setTimeout(() => {
+                setActivityIndex((i) => (i + 1) % activities.length);
+                setIsTransitioning(false);
+            }, 200);
+        }, 5000);
+
+        return () => {
+            window.clearInterval(rotateInterval);
+            clearTimeout(timer);
+        };
+    }, [activities.length, isOpen]);
+
+    // Update Spotify progress bar
+    useEffect(() => {
+        const currentActivity = activities[activityIndex];
+        if (!currentActivity || currentActivity.kind !== "spotify" || !currentActivity.timestamps) {
+            return;
+        }
+
+        const updateProgress = () => {
+            const now = Date.now();
+            const { start, end } = currentActivity.timestamps;
+            const elapsed = Math.max(0, now - start);
+            const total = end - start;
+            const progress = total > 0 ? Math.min(100, (elapsed / total) * 100) : 0;
+            setSpotifyProgress(progress);
+        };
+
+        updateProgress();
+        const progressInterval = window.setInterval(updateProgress, 1000);
+        return () => window.clearInterval(progressInterval);
+    }, [activities, activityIndex]);
+
+    const changeActivity = (direction) => {
+        setIsTransitioning(true);
+        setTimeout(() => {
+            setActivityIndex((i) =>
+                direction === "next"
+                    ? (i + 1) % activities.length
+                    : (i - 1 + activities.length) % activities.length
+            );
+            setIsTransitioning(false);
+        }, 200);
+    };
+
+    if (!payload || error) return null;
+
+    const status = payload.discord_status || "offline";
+    const currentActivity = activities[activityIndex];
+    const isSpotify = currentActivity?.kind === "spotify";
+    const activityTitle = isSpotify
+        ? `Listening to ${currentActivity.song}`
+        : getActivityText(currentActivity);
+    const activityImage = isSpotify
+        ? currentActivity.album_art_url
+        : getAssetUrl(
+            currentActivity?.assets?.large_image,
+            payload.discord_user?.id,
+            currentActivity?.application_id
+        );
+    const avatarUrl = payload.discord_user?.avatar
+        ? `https://cdn.discordapp.com/avatars/${payload.discord_user.id}/${payload.discord_user.avatar}.png?size=64`
+        : null;
+
+    const getSpotifyTime = () => {
+        if (!currentActivity || currentActivity.kind !== "spotify" || !currentActivity.timestamps) {
+            return { current: "0:00", total: "0:00" };
+        }
+        const now = Date.now();
+        const elapsed = Math.max(0, now - currentActivity.timestamps.start);
+        const total = Math.max(0, currentActivity.timestamps.end - currentActivity.timestamps.start);
+        return { current: formatTime(elapsed), total: formatTime(total) };
+    };
+
+    const spotifyTime = getSpotifyTime();
+
+    return (
+        <div className="fixed bottom-6 left-6 z-40 scale-90 md:scale-100">
+            <button
+                type="button"
+                onClick={() => setIsOpen((open) => !open)}
+                aria-expanded={isOpen}
+                aria-label="Discord activity"
+                className="flex items-center gap-3 rounded-xl border border-zinc-200 bg-white/90 px-3 py-2.5 shadow-lg backdrop-blur-sm transition-all hover:shadow-xl dark:border-zinc-800 dark:bg-zinc-900/90"
+            >
+                <div className="relative shrink-0">
+                    {avatarUrl ? (
+                        <img
+                            src={avatarUrl}
+                            alt=""
+                            className="h-9 w-9 rounded-full object-cover"
+                        />
+                    ) : (
+                        <div className="h-9 w-9 rounded-full bg-zinc-200 dark:bg-zinc-800" />
+                    )}
+                    <span
+                        className={`absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full ring-2 ring-white dark:ring-zinc-900 ${statusColors[status] || statusColors.offline}`}
+                    />
+                </div>
+                <div className="min-w-0 max-w-[180px] overflow-hidden">
+                    <div
+                        className="transition-transform duration-200 ease-in-out"
+                        style={{
+                            transform: isTransitioning ? 'translateY(-100%)' : 'translateY(0)',
+                            opacity: isTransitioning ? 0 : 1
+                        }}
+                    >
+                        <p className="font-jetmono text-[10px] uppercase tracking-wider text-zinc-400 dark:text-zinc-500">
+                            {payload.discord_user?.username}
+                        </p>
+                        <p className="truncate text-xs font-medium text-zinc-800 dark:text-zinc-200">
+                            {activityTitle}
+                        </p>
+                    </div>
+                </div>
+            </button>
+
+            {isOpen && (
+                <div className="absolute bottom-full left-0 mb-2 w-80 max-w-[calc(100vw-3rem)] rounded-xl border border-zinc-200 bg-white/95 p-4 shadow-xl backdrop-blur-sm transition-opacity duration-200 dark:border-zinc-800 dark:bg-zinc-900/95">
+                    <div className="mb-3 flex items-start justify-between">
+                        <div className="flex items-center gap-3">
+                            <div className="relative">
+                                {avatarUrl ? (
+                                    <img
+                                        src={avatarUrl}
+                                        alt=""
+                                        className="h-12 w-12 rounded-full object-cover ring-2 ring-zinc-200 dark:ring-zinc-700"
+                                    />
+                                ) : (
+                                    <div className="h-12 w-12 rounded-full bg-zinc-200 dark:bg-zinc-800" />
+                                )}
+                                <span
+                                    className={`absolute -bottom-0.5 -right-0.5 h-3.5 w-3.5 rounded-full ring-2 ring-white dark:ring-zinc-900 ${statusColors[status] || statusColors.offline}`}
+                                />
+                            </div>
+                            <div>
+                                <p className="font-semibold text-zinc-900 dark:text-zinc-50">
+                                    {payload.discord_user?.username}
+                                </p>
+                                <p className="text-xs capitalize text-zinc-500 dark:text-zinc-400">
+                                    {status}
+                                </p>
+                            </div>
+                        </div>
+                        <button
+                            type="button"
+                            onClick={() => setIsOpen(false)}
+                            className="rounded-lg p-1 text-zinc-400 transition-colors hover:bg-zinc-100 hover:text-zinc-800 dark:hover:bg-zinc-800 dark:hover:text-zinc-200"
+                            aria-label="Close"
+                        >
+                            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                        </button>
+                    </div>
+
+                    {currentActivity && (
+                        <div className="overflow-hidden">
+                            <div
+                                className="space-y-3 transition-all duration-200 ease-in-out"
+                                style={{
+                                    transform: isTransitioning ? 'translateY(20px)' : 'translateY(0)',
+                                    opacity: isTransitioning ? 0 : 1
+                                }}
+                            >
+                                <div className="flex gap-3 rounded-lg border border-zinc-200 bg-zinc-50/50 p-3 dark:border-zinc-800 dark:bg-zinc-800/50">
+                                    {activityImage && (
+                                        <img
+                                            src={activityImage}
+                                            alt=""
+                                            className="h-16 w-16 shrink-0 rounded-lg object-cover"
+                                        />
+                                    )}
+                                    <div className="min-w-0 flex-1">
+                                        <p className="mb-0.5 font-jetmono text-[10px] uppercase tracking-wider text-zinc-400 dark:text-zinc-500">
+                                            {isSpotify ? "Spotify" : "Activity"}
+                                        </p>
+                                        <p className="truncate text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+                                            {isSpotify ? currentActivity.song : currentActivity.name}
+                                        </p>
+                                        {isSpotify ? (
+                                            <>
+                                                <p className="truncate text-xs text-zinc-600 dark:text-zinc-400">
+                                                    {currentActivity.artist}
+                                                </p>
+                                                <div className="mt-2">
+                                                    <div className="mb-1 h-1 w-full overflow-hidden rounded-full bg-zinc-200 dark:bg-zinc-800">
+                                                        <div
+                                                            className="h-full bg-emerald-500 transition-all duration-1000"
+                                                            style={{ width: `${spotifyProgress}%` }}
+                                                        />
+                                                    </div>
+                                                    <div className="flex justify-between font-jetmono text-[9px] text-zinc-400 dark:text-zinc-500">
+                                                        <span>{spotifyTime.current}</span>
+                                                        <span>{spotifyTime.total}</span>
+                                                    </div>
+                                                </div>
+                                            </>
+                                        ) : (
+                                            <p className="truncate text-xs text-zinc-600 dark:text-zinc-400">
+                                                {currentActivity.details || currentActivity.state || "Active"}
+                                            </p>
+                                        )}
+                                    </div>
+                                </div>
+
+                                {activities.length > 1 && (
+                                    <div className="flex items-center justify-between">
+                                        <button
+                                            type="button"
+                                            onClick={() => changeActivity("prev")}
+                                            className="rounded-lg px-2 py-1 text-xs font-medium text-zinc-600 transition-colors hover:bg-zinc-100 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-100"
+                                        >
+                                            ← Prev
+                                        </button>
+                                        <span className="font-jetmono text-[10px] text-zinc-400">
+                                            {activityIndex + 1} / {activities.length}
+                                        </span>
+                                        <button
+                                            type="button"
+                                            onClick={() => changeActivity("next")}
+                                            className="rounded-lg px-2 py-1 text-xs font-medium text-zinc-600 transition-colors hover:bg-zinc-100 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-100"
+                                        >
+                                            Next →
+                                        </button>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    )}
+                </div>
+            )}
+        </div>
+    );
+}

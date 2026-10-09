@@ -10,6 +10,7 @@ import {
 	Instagram,
 	Linkedin,
 } from "lucide-astro";
+import DiscordActivity from "../components/DiscordActivity.jsx";
 
 interface Props {
 	title?: string;
@@ -239,6 +240,8 @@ const canonicalURL = new URL(
 				</div>
 			</footer>
 		</div>
+
+		<DiscordActivity client:load />
 
 		<script>
 			const themeToggleBtn = document.getElementById("theme-toggle");
