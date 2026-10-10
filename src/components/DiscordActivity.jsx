@@ -224,6 +224,16 @@ export default function DiscordActivity() {
             return `https://open.spotify.com/track/${currentActivity.track_id}`;
         }
 		
+        // YouTube link - extract video ID from thumbnail URL in large_image
+        if (currentActivity.name === "YouTube" && currentActivity.assets?.large_image) {
+            const thumbnailUrl = currentActivity.assets.large_image;
+            // Pattern: i.ytimg.com/vi/{VIDEO_ID}/
+            const thumbnailMatch = thumbnailUrl.match(/i\.ytimg\.com\/vi\/([a-zA-Z0-9_-]{11})\//);
+            if (thumbnailMatch) {
+            	return `https://www.youtube.com/watch?v=${thumbnailMatch[1]}`;
+            }
+        }
+		
         if (currentActivity.name === "YouTube" && currentActivity.sync_id) {
             return `https://www.youtube.com/watch?v=${currentActivity.sync_id}`;
         }
