@@ -36,7 +36,6 @@ function getAssetUrl(asset, userId, applicationId) {
 
 function getActivityText(activity) {
     if (!activity) return "No activity";
-    // Custom Status (type 4) - show state only
     if (activity.type === 4 && activity.state) {
     	return activity.state;
     }
@@ -218,6 +217,30 @@ export default function DiscordActivity() {
         ? `https://cdn.discordapp.com/avatars/${payload.discord_user.id}/${payload.discord_user.avatar}.png?size=64`
         : null;
 
+    const getActivityLink = () => {
+        if (!currentActivity) return null;
+		
+        if (isSpotify && currentActivity.track_id) {
+            return `https://open.spotify.com/track/${currentActivity.track_id}`;
+        }
+		
+        if (currentActivity.name === "YouTube" && currentActivity.sync_id) {
+            return `https://www.youtube.com/watch?v=${currentActivity.sync_id}`;
+        }
+		
+        if (currentActivity.name === "YouTube") {
+            const detailsOrState = currentActivity.details || currentActivity.state || "";
+            const youtubeMatch = detailsOrState.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
+            if (youtubeMatch) {
+            	return `https://www.youtube.com/watch?v=${youtubeMatch[1]}`;
+            }
+        }
+		
+        return null;
+    };
+
+    const activityLink = getActivityLink();
+
     const getSpotifyTime = () => {
         if (!currentActivity || currentActivity.kind !== "spotify" || !currentActivity.timestamps) {
             return { current: "0:00", total: "0:00" };
@@ -340,19 +363,55 @@ export default function DiscordActivity() {
                             >
                                 <div className="flex gap-3 rounded-lg border border-zinc-200 bg-zinc-50/50 p-3 transition-colors duration-200 hover:border-zinc-300 hover:bg-zinc-100/50 dark:border-zinc-800 dark:bg-zinc-800/50 dark:hover:border-zinc-700 dark:hover:bg-zinc-700/50">
                                     {activityImage && (
-                                        <img
-                                            src={activityImage}
-                                            alt=""
-                                            className="h-16 w-16 shrink-0 rounded-lg object-cover transition-transform duration-300 hover:scale-105"
-                                        />
+                                        activityLink ? (
+                                            <a 
+                                            	href={activityLink} 
+                                            	target="_blank" 
+                                            	rel="noopener noreferrer"
+                                            	className="group/image relative shrink-0"
+                                            >
+                                            	<img
+                                            		src={activityImage}
+                                            		alt=""
+                                            		className="h-16 w-16 rounded-lg object-cover transition-transform duration-300 group-hover/image:scale-105"
+                                            	/>
+                                            	<div className="absolute inset-0 flex items-center justify-center rounded-lg bg-black/0 opacity-0 transition-all duration-300 group-hover/image:bg-black/40 group-hover/image:opacity-100">
+                                            		<svg className="h-6 w-6 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                            			<path d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" />
+                                            		</svg>
+                                            	</div>
+                                            </a>
+                                        ) : (
+                                            <img
+                                            	src={activityImage}
+                                            	alt=""
+                                            	className="h-16 w-16 shrink-0 rounded-lg object-cover transition-transform duration-300 hover:scale-105"
+                                            />
+                                        )
                                     )}
                                     <div className="min-w-0 flex-1">
                                         <p className="mb-0.5 font-jetmono text-[10px] uppercase tracking-wider text-zinc-400 dark:text-zinc-500">
                                             {isSpotify ? "Spotify" : isCustomStatus ? "Status" : "Activity"}
                                         </p>
-                                        <p className="truncate text-sm font-semibold text-zinc-900 dark:text-zinc-100">
-                                            {isSpotify ? currentActivity.song : isCustomStatus ? currentActivity.state : currentActivity.name}
-                                        </p>
+                                        {activityLink ? (
+                                            <a 
+                                            	href={activityLink} 
+                                            	target="_blank" 
+                                            	rel="noopener noreferrer"
+                                            	className="group/link block"
+                                            >
+                                            	<p className="truncate text-sm font-semibold text-zinc-900 transition-colors group-hover/link:text-indigo-600 dark:text-zinc-100 dark:group-hover/link:text-indigo-400">
+                                            		{isSpotify ? currentActivity.song : isCustomStatus ? currentActivity.state : currentActivity.name}
+                                            		<svg className="ml-1 inline h-3 w-3 opacity-0 transition-opacity group-hover/link:opacity-100" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                            			<path strokeLinecap="round" strokeLinejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                                            		</svg>
+                                            	</p>
+                                            </a>
+                                        ) : (
+                                            <p className="truncate text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+                                            	{isSpotify ? currentActivity.song : isCustomStatus ? currentActivity.state : currentActivity.name}
+                                            </p>
+                                        )}
                                         {isSpotify ? (
                                             <>
                                                 <p className="truncate text-xs text-zinc-600 dark:text-zinc-400">
