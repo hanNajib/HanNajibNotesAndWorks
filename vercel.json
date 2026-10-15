@@ -8,7 +8,7 @@
           "value": "hannajibnotes.vercel.app"
         }
       ],
-      "destination": "https://blog.hannajib.my.id/$1",
+      "destination": "https://blog.hannajib.web.id/$1",
       "permanent": true
     }
   ]
