@@ -39,6 +39,19 @@ function getActivityText(activity) {
     if (activity.type === 4 && activity.state) {
     	return activity.state;
     }
+
+    // Format YouTube: "Watching [Nama Channel]"
+    if (activity.name === "YouTube" || activity.name === "YouTube Music") {
+        const channel = activity.state?.replace(/^by\s+/i, "").trim();
+        if (channel) {
+            return `Watching ${channel}`;
+        }
+        if (activity.details) {
+            return `Watching ${activity.details}`;
+        }
+        return "Watching YouTube";
+    }
+
     const label = activityLabels[activity.type] || "Using";
     return `${label} ${activity.name}`;
 }
@@ -68,7 +81,7 @@ export default function DiscordActivity() {
     const [isOpen, setIsOpen] = useState(false);
     const [activityIndex, setActivityIndex] = useState(0);
     const [error, setError] = useState(false);
-    const [spotifyProgress, setSpotifyProgress] = useState(0);
+    const [progress, setProgress] = useState(0);
     const [isTransitioning, setIsTransitioning] = useState(false);
     const [isCollapsed, setIsCollapsed] = useState(false);
     const [elapsedTime, setElapsedTime] = useState("");
@@ -118,6 +131,7 @@ export default function DiscordActivity() {
 
     const currentActivity = activities[activityIndex];
     const isSpotify = currentActivity?.kind === "spotify";
+    const isYouTube = currentActivity?.name === "YouTube" || currentActivity?.name === "YouTube Music";
     const isCustomStatus = currentActivity?.type === 4;
     const activityTitle = isSpotify
         ? `Listening to ${currentActivity.song}`
@@ -185,10 +199,11 @@ export default function DiscordActivity() {
         };
     }, [activities.length, isOpen, activityIndex, overflowDistance]);
 
-    // Update Spotify progress bar
+    // Update progress bar (Spotify, YouTube, atau player lainnya dengan timestamps)
     useEffect(() => {
         const currentActivity = activities[activityIndex];
-        if (!currentActivity || currentActivity.kind !== "spotify" || !currentActivity.timestamps) {
+        if (!currentActivity?.timestamps?.start || !currentActivity?.timestamps?.end) {
+            setProgress(0);
             return;
         }
 
@@ -197,8 +212,8 @@ export default function DiscordActivity() {
             const { start, end } = currentActivity.timestamps;
             const elapsed = Math.max(0, now - start);
             const total = end - start;
-            const progress = total > 0 ? Math.min(100, (elapsed / total) * 100) : 0;
-            setSpotifyProgress(progress);
+            const currentProgress = total > 0 ? Math.min(100, (elapsed / total) * 100) : 0;
+            setProgress(currentProgress);
         };
 
         updateProgress();
@@ -284,17 +299,24 @@ export default function DiscordActivity() {
 
     const activityLink = getActivityLink();
 
-    const getSpotifyTime = () => {
-        if (!currentActivity || currentActivity.kind !== "spotify" || !currentActivity.timestamps) {
+    const getPlaybackTime = () => {
+        if (!currentActivity?.timestamps) {
             return { current: "0:00", total: "0:00" };
         }
+        const { start, end } = currentActivity.timestamps;
+        if (!start) return { current: "0:00", total: "0:00" };
+
         const now = Date.now();
-        const elapsed = Math.max(0, now - currentActivity.timestamps.start);
-        const total = Math.max(0, currentActivity.timestamps.end - currentActivity.timestamps.start);
-        return { current: formatTime(elapsed), total: formatTime(total) };
+        const elapsed = Math.max(0, now - start);
+        if (end) {
+            const total = Math.max(0, end - start);
+            return { current: formatTime(elapsed), total: formatTime(total) };
+        }
+        return { current: formatTime(elapsed), total: null };
     };
 
-    const spotifyTime = getSpotifyTime();
+    const playbackTime = getPlaybackTime();
+    const hasPlayerProgress = Boolean(currentActivity?.timestamps?.start && currentActivity?.timestamps?.end);
 
     return (
         <div className="fixed bottom-6 left-6 z-40 scale-90 md:scale-100">
@@ -459,30 +481,26 @@ export default function DiscordActivity() {
                                             	href={activityLink} 
                                             	target="_blank" 
                                             	rel="noopener noreferrer"
-                                            	className="group/image relative shrink-0"
+                                            	className="group/image relative shrink-0 block"
+                                            	title="Buka link"
                                             >
                                             	<img
                                             		src={activityImage}
                                             		alt=""
-                                            		className="h-16 w-16 rounded-lg object-cover transition-transform duration-300 group-hover/image:scale-105"
+                                            		className="h-16 w-16 rounded-lg object-cover transition-all duration-200 group-hover/image:scale-105 group-hover/image:opacity-90"
                                             	/>
-                                            	<div className="absolute inset-0 flex items-center justify-center rounded-lg bg-black/0 opacity-0 transition-all duration-300 group-hover/image:bg-black/40 group-hover/image:opacity-100">
-                                            		<svg className="h-6 w-6 text-white" fill="currentColor" viewBox="0 0 20 20">
-                                            			<path d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" />
-                                            		</svg>
-                                            	</div>
                                             </a>
                                         ) : (
                                             <img
                                             	src={activityImage}
                                             	alt=""
-                                            	className="h-16 w-16 shrink-0 rounded-lg object-cover transition-transform duration-300 hover:scale-105"
+                                            	className="h-16 w-16 shrink-0 rounded-lg object-cover"
                                             />
                                         )
                                     )}
                                     <div className="min-w-0 flex-1">
                                         <p className="mb-0.5 font-jetmono text-[10px] uppercase tracking-wider text-zinc-400 dark:text-zinc-500">
-                                            {isSpotify ? "Spotify" : isCustomStatus ? "Status" : "Activity"}
+                                            {isSpotify ? "Spotify" : isYouTube ? "YouTube" : isCustomStatus ? "Status" : "Activity"}
                                         </p>
                                         {activityLink ? (
                                             <a 
@@ -493,9 +511,9 @@ export default function DiscordActivity() {
                                             >
                                             	<p 
                                                     className="line-clamp-2 break-words text-sm font-semibold text-zinc-900 transition-colors group-hover/link:text-indigo-600 dark:text-zinc-100 dark:group-hover/link:text-indigo-400"
-                                                    title={isSpotify ? currentActivity.song : isCustomStatus ? currentActivity.state : currentActivity.name}
+                                                    title={isSpotify ? currentActivity.song : isCustomStatus ? currentActivity.state : isYouTube ? (currentActivity.details || currentActivity.name) : currentActivity.name}
                                                 >
-                                            		{isSpotify ? currentActivity.song : isCustomStatus ? currentActivity.state : currentActivity.name}
+                                            		{isSpotify ? currentActivity.song : isCustomStatus ? currentActivity.state : isYouTube ? (currentActivity.details || currentActivity.name) : currentActivity.name}
                                             		<svg className="ml-1 inline h-3 w-3 opacity-0 transition-opacity group-hover/link:opacity-100" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                                             			<path strokeLinecap="round" strokeLinejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
                                             		</svg>
@@ -504,46 +522,51 @@ export default function DiscordActivity() {
                                         ) : (
                                             <p 
                                                 className="line-clamp-2 break-words text-sm font-semibold text-zinc-900 dark:text-zinc-100"
-                                                title={isSpotify ? currentActivity.song : isCustomStatus ? currentActivity.state : currentActivity.name}
+                                                title={isSpotify ? currentActivity.song : isCustomStatus ? currentActivity.state : isYouTube ? (currentActivity.details || currentActivity.name) : currentActivity.name}
                                             >
-                                            	{isSpotify ? currentActivity.song : isCustomStatus ? currentActivity.state : currentActivity.name}
+                                            	{isSpotify ? currentActivity.song : isCustomStatus ? currentActivity.state : isYouTube ? (currentActivity.details || currentActivity.name) : currentActivity.name}
                                             </p>
                                         )}
-                                        {isSpotify ? (
-                                            <>
-                                                <p className="line-clamp-1 truncate text-xs text-zinc-600 dark:text-zinc-400">
-                                                    {currentActivity.artist}
-                                                </p>
-                                                <div className="mt-2">
-                                                    <div className="mb-1 h-1 w-full overflow-hidden rounded-full bg-zinc-200 dark:bg-zinc-800">
-                                                        <div
-                                                            className="h-full bg-gradient-to-r from-emerald-400 to-emerald-600 transition-all duration-1000 ease-linear"
-                                                            style={{ width: `${spotifyProgress}%` }}
-                                                        />
-                                                    </div>
-                                                    <div className="flex justify-between font-jetmono text-[9px] text-zinc-400 dark:text-zinc-500">
-                                                        <span>{spotifyTime.current}</span>
-                                                        <span>{spotifyTime.total}</span>
-                                                    </div>
-                                                </div>
-                                            </>
-                                        ) : (
-                                            <>
-                                                {!isCustomStatus && (
-                                                    <p 
-                                                        className="line-clamp-2 break-words text-xs text-zinc-600 dark:text-zinc-400"
-                                                        title={currentActivity.details || currentActivity.state}
-                                                    >
-                                                        {currentActivity.details || currentActivity.state || "Active"}
-                                                    </p>
-                                                )}
-                                                {elapsedTime && (
-                                                    <p className="mt-1 font-jetmono text-[9px] text-zinc-400 dark:text-zinc-500">
-                                                        {elapsedTime} elapsed
-                                                    </p>
-                                                )}
-                                            </>
+
+                                        {isSpotify && (
+                                            <p className="line-clamp-1 truncate text-xs text-zinc-600 dark:text-zinc-400">
+                                                {currentActivity.artist}
+                                            </p>
                                         )}
+
+                                        {!isCustomStatus && !isSpotify && (
+                                            <p 
+                                                className="line-clamp-2 break-words text-xs text-zinc-600 dark:text-zinc-400"
+                                                title={isYouTube ? (currentActivity.state || currentActivity.details) : (currentActivity.details || currentActivity.state)}
+                                            >
+                                                {isYouTube 
+                                                    ? (currentActivity.state || "YouTube")
+                                                    : (currentActivity.details || currentActivity.state || "Active")}
+                                            </p>
+                                        )}
+
+                                        {hasPlayerProgress ? (
+                                            <div className="mt-2">
+                                                <div className="mb-1 h-1 w-full overflow-hidden rounded-full bg-zinc-200 dark:bg-zinc-800">
+                                                    <div
+                                                        className={`h-full transition-all duration-1000 ease-linear ${
+                                                            isYouTube
+                                                                ? "bg-gradient-to-r from-red-500 to-rose-600"
+                                                                : "bg-gradient-to-r from-emerald-400 to-emerald-600"
+                                                        }`}
+                                                        style={{ width: `${progress}%` }}
+                                                    />
+                                                </div>
+                                                <div className="flex justify-between font-jetmono text-[9px] text-zinc-400 dark:text-zinc-500">
+                                                    <span>{playbackTime.current}</span>
+                                                    <span>{playbackTime.total}</span>
+                                                </div>
+                                            </div>
+                                        ) : elapsedTime ? (
+                                            <p className="mt-1 font-jetmono text-[9px] text-zinc-400 dark:text-zinc-500">
+                                                {elapsedTime} elapsed
+                                            </p>
+                                        ) : null}
                                     </div>
                                 </div>
 
