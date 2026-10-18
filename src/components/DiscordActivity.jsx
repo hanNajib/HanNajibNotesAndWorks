@@ -163,24 +163,27 @@ export default function DiscordActivity() {
         return () => window.clearTimeout(timer);
     }, [activityTitle, isCollapsed, activityIndex]);
 
-    // Auto-rotate activities every 5 seconds (only when closed)
+    // Auto-rotate activities: tunggu teks selesai bergulir + jeda 2 detik di akhir sebelum berganti
     useEffect(() => {
         if (activities.length <= 1 || isOpen) return;
 
-        let timer;
-        const rotateInterval = window.setInterval(() => {
+        // Jika teks overflow, tunggu 8 detik (2s awal + 4s scroll + 2s akhir). Jika teks pendek, 5 detik.
+        const displayDuration = overflowDistance > 0 ? 8000 : 5000;
+
+        let transitionTimer;
+        const rotateTimer = window.setTimeout(() => {
             setIsTransitioning(true);
-            timer = setTimeout(() => {
+            transitionTimer = window.setTimeout(() => {
                 setActivityIndex((i) => (i + 1) % activities.length);
                 setIsTransitioning(false);
             }, 200);
-        }, 5000);
+        }, displayDuration);
 
         return () => {
-            window.clearInterval(rotateInterval);
-            clearTimeout(timer);
+            window.clearTimeout(rotateTimer);
+            if (transitionTimer) window.clearTimeout(transitionTimer);
         };
-    }, [activities.length, isOpen]);
+    }, [activities.length, isOpen, activityIndex, overflowDistance]);
 
     // Update Spotify progress bar
     useEffect(() => {
@@ -355,7 +358,9 @@ export default function DiscordActivity() {
                                 style={
                                     overflowDistance > 0
                                         ? {
-                                            animation: 'marqueePingPong 8s ease-in-out infinite',
+                                            animation: activities.length > 1
+                                                ? 'marqueeScrollAndPause 8s ease-in-out forwards'
+                                                : 'marqueePingPong 10s ease-in-out infinite',
                                             '--overflow-dist': `-${overflowDistance}px`
                                         }
                                         : undefined
@@ -486,7 +491,10 @@ export default function DiscordActivity() {
                                             	rel="noopener noreferrer"
                                             	className="group/link block"
                                             >
-                                            	<p className="truncate text-sm font-semibold text-zinc-900 transition-colors group-hover/link:text-indigo-600 dark:text-zinc-100 dark:group-hover/link:text-indigo-400">
+                                            	<p 
+                                                    className="line-clamp-2 break-words text-sm font-semibold text-zinc-900 transition-colors group-hover/link:text-indigo-600 dark:text-zinc-100 dark:group-hover/link:text-indigo-400"
+                                                    title={isSpotify ? currentActivity.song : isCustomStatus ? currentActivity.state : currentActivity.name}
+                                                >
                                             		{isSpotify ? currentActivity.song : isCustomStatus ? currentActivity.state : currentActivity.name}
                                             		<svg className="ml-1 inline h-3 w-3 opacity-0 transition-opacity group-hover/link:opacity-100" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                                             			<path strokeLinecap="round" strokeLinejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
@@ -494,13 +502,16 @@ export default function DiscordActivity() {
                                             	</p>
                                             </a>
                                         ) : (
-                                            <p className="truncate text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+                                            <p 
+                                                className="line-clamp-2 break-words text-sm font-semibold text-zinc-900 dark:text-zinc-100"
+                                                title={isSpotify ? currentActivity.song : isCustomStatus ? currentActivity.state : currentActivity.name}
+                                            >
                                             	{isSpotify ? currentActivity.song : isCustomStatus ? currentActivity.state : currentActivity.name}
                                             </p>
                                         )}
                                         {isSpotify ? (
                                             <>
-                                                <p className="truncate text-xs text-zinc-600 dark:text-zinc-400">
+                                                <p className="line-clamp-1 truncate text-xs text-zinc-600 dark:text-zinc-400">
                                                     {currentActivity.artist}
                                                 </p>
                                                 <div className="mt-2">
@@ -519,7 +530,10 @@ export default function DiscordActivity() {
                                         ) : (
                                             <>
                                                 {!isCustomStatus && (
-                                                    <p className="truncate text-xs text-zinc-600 dark:text-zinc-400">
+                                                    <p 
+                                                        className="line-clamp-2 break-words text-xs text-zinc-600 dark:text-zinc-400"
+                                                        title={currentActivity.details || currentActivity.state}
+                                                    >
                                                         {currentActivity.details || currentActivity.state || "Active"}
                                                     </p>
                                                 )}
@@ -561,11 +575,20 @@ export default function DiscordActivity() {
             )}
 
             <style>{`
+                @keyframes marqueeScrollAndPause {
+                    0%, 25% {
+                        transform: translateX(0);
+                    }
+                    75%, 100% {
+                        transform: translateX(var(--overflow-dist, 0px));
+                    }
+                }
+
                 @keyframes marqueePingPong {
                     0%, 20% {
                         transform: translateX(0);
                     }
-                    60%, 80% {
+                    50%, 70% {
                         transform: translateX(var(--overflow-dist, 0px));
                     }
                     100% {
