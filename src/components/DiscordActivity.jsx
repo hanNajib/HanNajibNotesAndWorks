@@ -116,6 +116,13 @@ export default function DiscordActivity() {
         return [...spotifyActivity, ...otherActivities];
     }, [payload]);
 
+    const currentActivity = activities[activityIndex];
+    const isSpotify = currentActivity?.kind === "spotify";
+    const isCustomStatus = currentActivity?.type === 4;
+    const activityTitle = isSpotify
+        ? `Listening to ${currentActivity.song}`
+        : getActivityText(currentActivity);
+
     useEffect(() => {
         if (activityIndex >= activities.length) setActivityIndex(0);
     }, [activities.length, activityIndex]);
@@ -229,12 +236,6 @@ export default function DiscordActivity() {
     if (!payload || error) return null;
 
     const status = payload.discord_status || "offline";
-    const currentActivity = activities[activityIndex];
-    const isSpotify = currentActivity?.kind === "spotify";
-    const isCustomStatus = currentActivity?.type === 4;
-    const activityTitle = isSpotify
-        ? `Listening to ${currentActivity.song}`
-        : getActivityText(currentActivity);
     const activityImage = isSpotify
         ? currentActivity.album_art_url
         : getAssetUrl(
