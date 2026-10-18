@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 const DISCORD_ID = "734571877162549262";
 const LANYARD_URL = `https://api.lanyard.rest/v1/users/${DISCORD_ID}`;
@@ -72,6 +72,12 @@ export default function DiscordActivity() {
     const [isTransitioning, setIsTransitioning] = useState(false);
     const [isCollapsed, setIsCollapsed] = useState(false);
     const [elapsedTime, setElapsedTime] = useState("");
+    const [hasUserInteracted, setHasUserInteracted] = useState(false);
+    const [overflowDistance, setOverflowDistance] = useState(0);
+
+    const hasAutoCollapsedRef = useRef(false);
+    const textContainerRef = useRef(null);
+    const textSpanRef = useRef(null);
 
     useEffect(() => {
         let isMounted = true;
@@ -114,18 +120,41 @@ export default function DiscordActivity() {
         if (activityIndex >= activities.length) setActivityIndex(0);
     }, [activities.length, activityIndex]);
 
+    // Auto-collapse intro: hanya jalan 1x di awal setelah 5 detik jika user belum berinteraksi
     useEffect(() => {
-        if (isOpen) {
-            setIsCollapsed(false);
-            return;
-        }
+        if (hasAutoCollapsedRef.current || hasUserInteracted || isOpen) return;
 
         const collapseTimer = window.setTimeout(() => {
             setIsCollapsed(true);
+            hasAutoCollapsedRef.current = true;
         }, 5000);
 
         return () => window.clearTimeout(collapseTimer);
-    }, [isOpen, payload]);
+    }, [isOpen, hasUserInteracted]);
+
+    // Hitung jarak overflow teks jika teks lebih panjang dari lebar pill
+    useEffect(() => {
+        if (!textSpanRef.current || !textContainerRef.current || isCollapsed) {
+            setOverflowDistance(0);
+            return;
+        }
+
+        const measureOverflow = () => {
+            if (!textSpanRef.current || !textContainerRef.current) return;
+            const scrollW = textSpanRef.current.scrollWidth;
+            const clientW = textContainerRef.current.clientWidth;
+
+            if (scrollW > clientW + 2) {
+                setOverflowDistance(scrollW - clientW);
+            } else {
+                setOverflowDistance(0);
+            }
+        };
+
+        // Beri jeda 350ms agar animasi transisi lebar pill selesai sebelum diukur
+        const timer = window.setTimeout(measureOverflow, 350);
+        return () => window.clearTimeout(timer);
+    }, [activityTitle, isCollapsed, activityIndex]);
 
     // Auto-rotate activities every 5 seconds (only when closed)
     useEffect(() => {
@@ -268,10 +297,14 @@ export default function DiscordActivity() {
             <button
                 type="button"
                 onClick={() => {
-                    setIsCollapsed(false);
-                    setIsOpen((open) => !open);
+                    setHasUserInteracted(true);
+                    setIsCollapsed((prev) => {
+                        const next = !prev;
+                        if (next) setIsOpen(false);
+                        return next;
+                    });
                 }}
-                aria-expanded={isOpen}
+                aria-expanded={!isCollapsed}
                 aria-label={isCollapsed ? "Show Discord activity" : "Discord activity"}
                 className={`group flex items-center gap-3 border bg-white/90 shadow-lg backdrop-blur-sm transition-all duration-500 ease-out dark:bg-zinc-900/90 ${
                     isCollapsed
@@ -301,7 +334,7 @@ export default function DiscordActivity() {
                 </div>
                 <div
                     className={`min-w-0 overflow-hidden transition-all duration-500 ease-out ${
-                        isCollapsed ? "max-w-0 opacity-0" : "max-w-[180px] opacity-100 delay-100"
+                        isCollapsed ? "max-w-0 opacity-0" : "max-w-[190px] opacity-100 delay-100"
                     }`}
                 >
                     <div
@@ -311,14 +344,56 @@ export default function DiscordActivity() {
                             opacity: isTransitioning ? 0 : 1
                         }}
                     >
-                        <p className="font-jetmono text-[10px] uppercase tracking-wider text-zinc-400 dark:text-zinc-500">
+                        <p className="font-jetmono text-[10px] uppercase tracking-wider text-zinc-400 dark:text-zinc-500 text-left">
                             {payload.discord_user?.username}
                         </p>
-                        <p className="truncate text-xs font-medium text-zinc-800 dark:text-zinc-200">
-                            {activityTitle}
-                        </p>
+                        <div ref={textContainerRef} className="overflow-hidden w-full relative text-left">
+                            <span
+                                ref={textSpanRef}
+                                className="inline-block whitespace-nowrap text-xs font-medium text-zinc-800 dark:text-zinc-200"
+                                style={
+                                    overflowDistance > 0
+                                        ? {
+                                            animation: 'marqueePingPong 8s ease-in-out infinite',
+                                            '--overflow-dist': `-${overflowDistance}px`
+                                        }
+                                        : undefined
+                                }
+                            >
+                                {activityTitle}
+                            </span>
+                        </div>
                     </div>
                 </div>
+
+                {!isCollapsed && (
+                    <span
+                        role="button"
+                        tabIndex={0}
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            setIsOpen((open) => !open);
+                        }}
+                        onKeyDown={(e) => {
+                            if (e.key === "Enter" || e.key === " ") {
+                                e.stopPropagation();
+                                setIsOpen((open) => !open);
+                            }
+                        }}
+                        title={isOpen ? "Tutup detail" : "Lihat detail"}
+                        className="ml-auto rounded p-1 text-zinc-400 transition-all hover:bg-zinc-100 hover:text-zinc-700 dark:hover:bg-zinc-800 dark:hover:text-zinc-200"
+                    >
+                        <svg
+                            className={`h-3.5 w-3.5 transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`}
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                            strokeWidth={2.5}
+                        >
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M5 15l7-7 7 7" />
+                        </svg>
+                    </span>
+                )}
             </button>
 
             {isOpen && (
@@ -483,6 +558,20 @@ export default function DiscordActivity() {
                     )}
                 </div>
             )}
+
+            <style>{`
+                @keyframes marqueePingPong {
+                    0%, 20% {
+                        transform: translateX(0);
+                    }
+                    60%, 80% {
+                        transform: translateX(var(--overflow-dist, 0px));
+                    }
+                    100% {
+                        transform: translateX(0);
+                    }
+                }
+            `}</style>
         </div>
     );
 }
