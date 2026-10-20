@@ -246,6 +246,25 @@ const tagsString = post.tags ? post.tags.join(", ") : "";
                 class="w-full px-3 py-1.5 text-xs rounded-lg border border-zinc-200 dark:border-zinc-800 bg-transparent focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-all text-zinc-800 dark:text-zinc-200"
               />
 
+              <div class="space-y-1">
+                <label
+                  for="post-cover-display"
+                  class="block text-[10px] font-mono uppercase tracking-wider text-zinc-400"
+                >
+                  Posisi / Tampilan Cover
+                </label>
+                <select
+                  id="post-cover-display"
+                  name="cover_display"
+                  class="w-full px-2.5 py-1.5 text-xs rounded-lg border border-zinc-200 dark:border-zinc-800 bg-transparent focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 transition-all text-zinc-800 dark:text-zinc-200"
+                >
+                  <option value="center" selected={!post.cover_display || post.cover_display === "center"} class="dark:bg-zinc-900">Area Tengah (Default)</option>
+                  <option value="top" selected={post.cover_display === "top"} class="dark:bg-zinc-900">Area Atas</option>
+                  <option value="bottom" selected={post.cover_display === "bottom"} class="dark:bg-zinc-900">Area Bawah</option>
+                  <option value="full" selected={post.cover_display === "full"} class="dark:bg-zinc-900">Full (Tanpa Potong)</option>
+                </select>
+              </div>
+
               <input
                 type="hidden"
                 id="post-image"
@@ -386,6 +405,9 @@ const tagsString = post.tags ? post.tags.join(", ") : "";
     const postImageUrlInput = document.getElementById(
       "post-image-url"
     ) as HTMLInputElement;
+    const coverDisplaySelect = document.getElementById(
+      "post-cover-display"
+    ) as HTMLSelectElement;
 
     const postId = editForm?.getAttribute("data-id");
     let quill: any;
@@ -748,6 +770,28 @@ const tagsString = post.tags ? post.tags.join(", ") : "";
       }
     }
 
+    function updateCoverPreviewDisplay() {
+      if (!coverPreview || !coverPreviewContainer) return;
+      const mode = coverDisplaySelect?.value || "center";
+
+      coverPreview.className = "w-full transition-all duration-300";
+      coverPreviewContainer.className =
+        "relative w-full max-w-[280px] rounded-xl overflow-hidden border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/50 shadow-inner";
+
+      if (mode === "full") {
+        coverPreview.classList.add("h-auto", "max-h-60", "object-contain");
+        coverPreviewContainer.classList.add("flex", "items-center", "justify-center");
+      } else {
+        coverPreviewContainer.classList.add("aspect-video");
+        coverPreview.classList.add("h-full", "object-cover");
+        if (mode === "top") coverPreview.classList.add("object-top");
+        else if (mode === "bottom") coverPreview.classList.add("object-bottom");
+        else coverPreview.classList.add("object-center");
+      }
+    }
+
+    coverDisplaySelect?.addEventListener("change", updateCoverPreviewDisplay);
+
     // Inisialisasi pratinjau gambar awal dari database
     function initCoverPreview() {
       const oldImage = postImageInput?.value;
@@ -755,8 +799,12 @@ const tagsString = post.tags ? post.tags.join(", ") : "";
         if (coverPreview) coverPreview.src = oldImage;
         coverPreviewContainer?.classList.remove("hidden");
         btnClearCover?.classList.remove("hidden");
+        updateCoverPreviewDisplay();
       }
     }
+
+    // Panggil inisialisasi awal
+    initCoverPreview();
 
     // Handle Input URL Gambar Eksternal untuk Cover Baru
     postImageUrlInput?.addEventListener("input", () => {
@@ -770,6 +818,7 @@ const tagsString = post.tags ? post.tags.join(", ") : "";
 
         coverPreviewContainer?.classList.remove("hidden");
         btnClearCover?.classList.remove("hidden");
+        updateCoverPreviewDisplay();
       } else {
         clearCoverState();
       }
@@ -792,6 +841,7 @@ const tagsString = post.tags ? post.tags.join(", ") : "";
 
         coverPreviewContainer?.classList.remove("hidden");
         btnClearCover?.classList.remove("hidden");
+        updateCoverPreviewDisplay();
       }
     });
 
@@ -900,6 +950,7 @@ const tagsString = post.tags ? post.tags.join(", ") : "";
             read_time: parseInt(read_time) || 0,
             tags,
             image: finalImageUrl, // URL String bersih hasil upload storage baru atau link lama
+            cover_display: coverDisplaySelect?.value || "center",
             status,
             content,
           })

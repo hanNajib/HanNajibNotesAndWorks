@@ -220,11 +220,25 @@ const pageIdentifier = post.id;
 
             {
                 post.category !== "snap" && post.image && (
-                    <div class="mb-12 md:mb-16 overflow-hidden rounded-2xl md:rounded-3xl border border-zinc-200/70 dark:border-zinc-800 shadow-sm">
+                    <div
+                        class={`mb-12 md:mb-16 overflow-hidden rounded-2xl md:rounded-3xl border border-zinc-200/70 dark:border-zinc-800 shadow-sm ${
+                            post.cover_display === "full"
+                                ? "flex items-center justify-center bg-zinc-50 dark:bg-zinc-900/50 max-h-[800px]"
+                                : ""
+                        }`}
+                    >
                         <img
                             src={post.image}
                             alt={post.title}
-                            class="w-full max-h-[450px] md:max-h-[600px] object-cover"
+                            class={`w-full ${
+                                post.cover_display === "full"
+                                    ? "h-auto max-h-[800px] object-contain"
+                                    : post.cover_display === "top"
+                                      ? "max-h-[450px] md:max-h-[600px] object-cover object-top"
+                                      : post.cover_display === "bottom"
+                                        ? "max-h-[450px] md:max-h-[600px] object-cover object-bottom"
+                                        : "max-h-[450px] md:max-h-[600px] object-cover object-center"
+                            }`}
                         />
                     </div>
                 )

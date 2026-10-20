@@ -142,8 +142,23 @@ export default function Feed({ posts }) {
                                         {post.title}
                                     </h3>
                                     {post.image && (
-                                        <div className="mb-4 overflow-hidden rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-100 dark:bg-zinc-900 max-h-72">
-                                            <img src={post.image} alt={post.title} loading={index < 2 ? 'eager' : 'lazy'} className="w-full h-full object-cover group-hover:scale-[1.01] transition-transform duration-500 max-h-72" />
+                                        <div className={`mb-4 overflow-hidden rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-100 dark:bg-zinc-900 ${
+                                            post.cover_display === 'full' ? 'max-h-96 flex items-center justify-center' : 'max-h-72'
+                                        }`}>
+                                            <img
+                                                src={post.image}
+                                                alt={post.title}
+                                                loading={index < 2 ? 'eager' : 'lazy'}
+                                                className={`w-full group-hover:scale-[1.01] transition-transform duration-500 ${
+                                                    post.cover_display === 'full'
+                                                        ? 'h-auto max-h-96 object-contain'
+                                                        : post.cover_display === 'top'
+                                                        ? 'h-full object-cover object-top max-h-72'
+                                                        : post.cover_display === 'bottom'
+                                                        ? 'h-full object-cover object-bottom max-h-72'
+                                                        : 'h-full object-cover object-center max-h-72'
+                                                }`}
+                                            />
                                         </div>
                                     )}
                                     <p className="text-sm text-zinc-500 dark:text-zinc-400 leading-relaxed mb-4 line-clamp-2">
