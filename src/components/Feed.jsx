@@ -17,10 +17,60 @@ const stripHtml = (html) => {
     return html.replace(/<[^>]*>/g, '');
 }
 
+const TAB_MAP = {
+    works: 'work',
+    work: 'work',
+    notes: 'note',
+    note: 'note',
+    tils: 'til',
+    til: 'til',
+    snaps: 'snap',
+    snap: 'snap',
+    all: 'all',
+    semua: 'all'
+};
+
 export default function Feed({ posts }) {
     const [currentFilter, setCurrentFilter] = useState('all')
     const [searchQuery, setSearchQuery] = useState('')
     const [liveViews, setLiveViews] = useState({})
+
+    useEffect(() => {
+        if (typeof window === 'undefined') return;
+
+        const params = new URLSearchParams(window.location.search);
+        const tabParam = params.get('tab');
+        if (tabParam && TAB_MAP[tabParam.toLowerCase()]) {
+            setCurrentFilter(TAB_MAP[tabParam.toLowerCase()]);
+        }
+
+        const handlePopState = () => {
+            const currentParams = new URLSearchParams(window.location.search);
+            const currentTab = currentParams.get('tab');
+            if (currentTab && TAB_MAP[currentTab.toLowerCase()]) {
+                setCurrentFilter(TAB_MAP[currentTab.toLowerCase()]);
+            } else {
+                setCurrentFilter('all');
+            }
+        };
+
+        window.addEventListener('popstate', handlePopState);
+        return () => window.removeEventListener('popstate', handlePopState);
+    }, []);
+
+    const handleTabChange = (category) => {
+        setCurrentFilter(category);
+        if (typeof window !== 'undefined') {
+            const url = new URL(window.location.href);
+            if (category === 'all') {
+                url.searchParams.delete('tab');
+            } else {
+                const paramName = category === 'work' ? 'works' : category === 'note' ? 'notes' : category === 'snap' ? 'snaps' : category;
+                url.searchParams.set('tab', paramName);
+            }
+            window.history.replaceState({}, '', url);
+        }
+    };
 
     useEffect(() => {
         async function fetchLatestViews() {
@@ -62,7 +112,7 @@ export default function Feed({ posts }) {
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
                 <div className="flex space-x-1 border-b sm:border-b-0 border-zinc-200 dark:border-zinc-800 pb-2 sm:pb-0 overflow-x-auto whitespace-nowrap scrollbar-none">
                     {['all', 'note', 'work', 'til', 'snap'].map((category) => (
-                        <button key={category} onClick={() => setCurrentFilter(category)} className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all border border-transparent capitalize cursor-pointer ${currentFilter === category ? 'text-zinc-900 dark:text-zinc-50 bg-zinc-100 dark:bg-zinc-900' : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-50'}`}>
+                        <button key={category} onClick={() => handleTabChange(category)} className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all border border-transparent capitalize cursor-pointer ${currentFilter === category ? 'text-zinc-900 dark:text-zinc-50 bg-zinc-100 dark:bg-zinc-900' : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-50'}`}>
                             {category === 'all' ? 'Semua' : category === 'note' ? 'Notes' : category === 'work' ? 'Works' : category === 'til' ? 'TIL' : category === 'snap' ? 'Snaps' : category}
                         </button>
                     ))}
