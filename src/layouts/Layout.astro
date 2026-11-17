@@ -283,5 +283,8 @@ const canonicalURL = new URL(
 				}
 			};
 		</script>
+		<script is:inline define:vars={{ canonicalURL }}>
+			console.log("inicanonicalurl", canonicalURL);
+		</script>
 	</body>
 </html>

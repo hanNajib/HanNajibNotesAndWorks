@@ -45,6 +45,30 @@ export async function getStaticPaths() {
                         ? "til"
                         : "snaps";
 
+            // Algoritma rekomendasi:
+            // 1. Prioritaskan tulisan yang punya tag yang sama
+            // 2. Jika kurang dari 3, tambahkan tulisan dari kategori yang sama
+            // 3. Jika masih kurang dari 3, tambahkan tulisan terbaru lainnya lintas kategori
+            const currentTags = Array.isArray(post.tags) ? post.tags : [];
+            const candidates = posts.filter((p) => p.slug !== post.slug);
+
+            const scoredPosts = candidates.map((candidate) => {
+                const candidateTags = Array.isArray(candidate.tags) ? candidate.tags : [];
+                const sharedTags = candidateTags.filter((t) => currentTags.includes(t)).length;
+                const sameCategory = candidate.category === post.category ? 1 : 0;
+                
+                // Bobot skor: shared tags (3 poin), same category (1 poin)
+                const score = sharedTags * 3 + sameCategory;
+                return { candidate, score };
+            });
+
+            scoredPosts.sort((a, b) => {
+                if (b.score !== a.score) return b.score - a.score;
+                return new Date(b.candidate.created_at).getTime() - new Date(a.candidate.created_at).getTime();
+            });
+
+            const relatedPosts = scoredPosts.slice(0, 3).map((item) => item.candidate);
+
             return {
                 params: {
                     category: categoryPath,
@@ -52,18 +76,7 @@ export async function getStaticPaths() {
                 },
                 props: {
                     post,
-                    relatedPosts: posts
-                        .filter(
-                            (candidate) =>
-                                candidate.category === post.category &&
-                                candidate.slug !== post.slug,
-                        )
-                        .sort(
-                            (firstPost, secondPost) =>
-                                new Date(secondPost.created_at).getTime() -
-                                new Date(firstPost.created_at).getTime(),
-                        )
-                        .slice(0, 3),
+                    relatedPosts,
                 },
             };
         }) || []
@@ -155,12 +168,25 @@ const pageIdentifier = post.id;
 
     <div class="max-w-4xl mx-auto py-6 md:py-10">
         <div class="mb-8">
-            <a
-                href="/"
-                class="inline-flex items-center gap-1.5 text-xs md:text-sm text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200 transition-colors font-mono"
-            >
-                &larr; Kembali ke Beranda
-            </a>
+            <nav aria-label="Breadcrumb" class="flex items-center gap-1.5 text-xs md:text-sm font-mono text-zinc-400">
+                <a
+                    href="/"
+                    class="hover:text-zinc-900 dark:hover:text-zinc-200 transition-colors"
+                >
+                    beranda
+                </a>
+                <span>/</span>
+                <a
+                    href={`/?tab=${category}`}
+                    class="hover:text-zinc-900 dark:hover:text-zinc-200 transition-colors lowercase"
+                >
+                    {category}
+                </a>
+                <span>/</span>
+                <span class="text-zinc-500 dark:text-zinc-400 truncate max-w-[200px] md:max-w-md">
+                    {post.slug}
+                </span>
+            </nav>
         </div>
 
         {
@@ -269,7 +295,7 @@ const pageIdentifier = post.id;
             relatedPosts.length > 0 && (
                 <section class="mt-20 pt-10 border-t border-zinc-200/70 dark:border-zinc-800">
                     <h2 class="text-xl md:text-2xl font-bold text-zinc-900 dark:text-zinc-100 mb-8 tracking-tight">
-                        
+                        Bacaan Terkait
                     </h2>
 
                     <div class="grid gap-6 md:grid-cols-3">

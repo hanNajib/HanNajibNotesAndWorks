@@ -58,6 +58,12 @@ export default function Feed({ posts }) {
         return () => window.removeEventListener('popstate', handlePopState);
     }, []);
 
+    const getTabHref = (category) => {
+        if (category === 'all') return '/';
+        const paramName = category === 'work' ? 'works' : category === 'note' ? 'notes' : category === 'snap' ? 'snaps' : category;
+        return `/?tab=${paramName}`;
+    };
+
     const handleTabChange = (category) => {
         setCurrentFilter(category);
         if (typeof window !== 'undefined') {
@@ -112,9 +118,17 @@ export default function Feed({ posts }) {
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
                 <div className="flex space-x-1 border-b sm:border-b-0 border-zinc-200 dark:border-zinc-800 pb-2 sm:pb-0 overflow-x-auto whitespace-nowrap scrollbar-none">
                     {['all', 'note', 'work', 'til', 'snap'].map((category) => (
-                        <button key={category} onClick={() => handleTabChange(category)} className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all border border-transparent capitalize cursor-pointer ${currentFilter === category ? 'text-zinc-900 dark:text-zinc-50 bg-zinc-100 dark:bg-zinc-900' : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-50'}`}>
+                        <a
+                            key={category}
+                            href={getTabHref(category)}
+                            onClick={(e) => {
+                                e.preventDefault();
+                                handleTabChange(category);
+                            }}
+                            className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all border border-transparent capitalize cursor-pointer inline-block ${currentFilter === category ? 'text-zinc-900 dark:text-zinc-50 bg-zinc-100 dark:bg-zinc-900' : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-50'}`}
+                        >
                             {category === 'all' ? 'Semua' : category === 'note' ? 'Notes' : category === 'work' ? 'Works' : category === 'til' ? 'TIL' : category === 'snap' ? 'Snaps' : category}
-                        </button>
+                        </a>
                     ))}
                 </div>
 
